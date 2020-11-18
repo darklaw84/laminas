@@ -1,0 +1,27 @@
+
+  #wrapper_2:before {
+    content: "";
+    background-color: #dddddd;
+    width: 2px;
+    height: 200px;
+  
+    display: block;
+  }
+
+
+  .rojo
+  {
+    color:red!important;
+  }
+
+
+  a.footerlink{
+    color: #495057!important;
+  }
+
+  a.footerlink:hover {
+   
+    
+    text-decoration: none;
+    
+  }
