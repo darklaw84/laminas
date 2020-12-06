@@ -57,6 +57,7 @@ class CatalogosModel
                     "idTipo" => $idTipo,
                     "idUnidad" => $idUnidad,
                     "unidad" => $unidad,
+                    "medidasreves" => $medidasreves,
                     "idAncho" => $idAncho,
                     "producto" => $producto,
                     "largo" => $largo,
@@ -104,7 +105,7 @@ class CatalogosModel
             inner join unidades uf on uf.idUnidad=p.idUnidadFactura
             where p.entrada=1
 
-                order by producto ";
+                order by sku ";
 
 
 
@@ -178,7 +179,7 @@ class CatalogosModel
             inner join anchos a on a.idAncho = p.idAncho
             inner join unidades u on u.idUnidad=p.idUnidad
             inner join unidades uf on uf.idUnidad=p.idUnidadFactura
-            where p.salida=1
+            where p.salida=1 and p.activo=1
 
                 order by producto ";
 
@@ -250,11 +251,12 @@ class CatalogosModel
     {
 
 
-        $query = "SELECT  r.usuarioRecibe,r.idRecepcion,r.cantidad,r.peso,u.unidad,
+        $query = "SELECT  r.usuarioRecibe,r.idRecepcion,r.cantidad,r.peso,u.unidad,p.idUnidad,
             a.almacen,r.fechaRecibe FROM  recepciones r
             inner join almacenes a on a.idAlmacen=r.idAlmacen
+            inner join productos p on p.idProducto = r.idProducto
             inner join unidades u on u.idUnidad=r.idUnidad
-            where idProducto = " . $idProducto . "
+            where r.idProducto = " . $idProducto . "
                 order by r.fechaRecibe desc ";
 
 
@@ -286,6 +288,7 @@ class CatalogosModel
                     "cantidad" => $cantidad,
                     "peso" => $peso,
                     "unidad" => $unidad,
+                    "idUnidad" => $idUnidad,
                     "tipo" => "R",
                     "almacen" => $almacen,
                     "fecha" => $fechaRecibe
@@ -312,9 +315,10 @@ class CatalogosModel
 
 
         $query = "SELECT  t.idTraspaso, us.nombre usuario,r.idRecepcion,0 cantidad,0 peso,u.unidad,
-            a.almacen,t.fecha,t.tipo FROM  traspasos t
+            a.almacen,t.fecha,t.tipo,p.idUnidad FROM  traspasos t
             inner join usuarios us on us.idUsuario = t.idUsuario
             inner join recepciones r on r.idRecepcion = t.idRecepcion
+            inner join productos p on p.idProducto=r.idProducto
             inner join almacenes a on a.idAlmacen=t.idAlmacen
             inner join unidades u on u.idUnidad=r.idUnidad
             where r.idProducto = " . $idProducto . "
@@ -349,6 +353,7 @@ class CatalogosModel
                     "cantidad" => $cantidad,
                     "peso" => $peso,
                     "unidad" => $unidad,
+                    "idUnidad" => $idUnidad,
                     "tipo" => $tipo,
                     "almacen" => $almacen,
                     "fecha" => $fecha
@@ -407,12 +412,11 @@ class CatalogosModel
                 // just $name only
                 extract($row);
 
-                $detalle=$this->obtenerdetalleUsoRecepcion($idRecepcion)->registros;
+                $detalle = $this->obtenerdetalleUsoRecepcion($idRecepcion)->registros;
 
-                $kilosUsados=0;
-                foreach($detalle as $det)
-                {
-                    $kilosUsados = $kilosUsados+$det['kilos'];
+                $kilosUsados = 0;
+                foreach ($detalle as $det) {
+                    $kilosUsados = $kilosUsados + $det['kilos'];
                 }
 
                 $restante = $peso - $kilosUsados;
@@ -460,7 +464,7 @@ class CatalogosModel
         $query = "SELECT  p.*,pr.producto,c.calibre,t.tipo from producciones p
         inner join productos pr on pr.idProducto = p.idProducto
         inner join calibres c on c.idCalibre = pr.idCalibre
-        inner join tipos t on t.idTipo =pr.idTipo  where idRecepcion = ".$idRecepcion." ";
+        inner join tipos t on t.idTipo =pr.idTipo  where idRecepcion = " . $idRecepcion . " ";
 
 
 
@@ -516,9 +520,10 @@ class CatalogosModel
     {
 
 
-        $query = "SELECT  s.idSalida,s.usuario,s.fecha,p.kilos,p.cantidad,u.unidad,a.almacen,re.idRecepcion FROM  salidas s
+        $query = "SELECT  pr.idUnidad,s.idSalida,s.usuario,s.fecha,p.kilos,p.cantidad,u.unidad,a.almacen,re.idRecepcion FROM  salidas s
             inner join producciones p on p.idProduccion = s.idProduccion
             inner join recepciones re on re.idRecepcion = p.idRecepcion 
+            inner join productos pr on pr.idProducto = re.idProducto
             inner join almacenes a on a.idAlmacen=p.idAlmacen
             inner join cotizaciondetalle cd on cd.idCotizacionDet=p.idCotizacionDetalle
             inner join unidades u on u.idUnidad=cd.idUnidad
@@ -557,6 +562,7 @@ class CatalogosModel
                     "unidad" => $unidad,
                     "tipo" => "S",
                     "almacen" => $almacen,
+                    "idUnidad" => $idUnidad,
                     "fecha" => $fecha
 
                 );
@@ -616,6 +622,7 @@ class CatalogosModel
                     "telefono" => $telefono,
                     "mail" => $mail,
                     "idUso" => $idUso,
+                    "idVendedor" => $idVendedor,
                     "uso" => $uso,
                     "direccionentrega" => $direccionentrega,
                     "tipoprecio" => $tipoprecio,
@@ -691,6 +698,112 @@ class CatalogosModel
         return $respuesta;
     }
 
+
+
+
+    function obtenerChoferes()
+    {
+
+
+        $query = "SELECT  * from choferes 
+           order by chofer ";
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // extract row
+                // this will make $row['name'] to
+                // just $name only
+                extract($row);
+
+
+
+
+                $registro_item = array(
+                    "idChofer" => $idChofer,
+                    "chofer" => $chofer,
+                    "activo" => $activo
+
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
+
+    function obtenerCamiones()
+    {
+
+
+        $query = "SELECT  * from camiones 
+           order by camion ";
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // extract row
+                // this will make $row['name'] to
+                // just $name only
+                extract($row);
+
+
+
+
+                $registro_item = array(
+                    "idCamion" => $idCamion,
+                    "camion" => $camion,
+                    "placas" => $placas,
+                    "activo" => $activo
+
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
 
 
     function obtenerUsos()
@@ -1067,7 +1180,7 @@ class CatalogosModel
     }
 
 
-    
+
 
 
 
@@ -1307,7 +1420,8 @@ class CatalogosModel
         $largo,
         $idUnidadFactura,
         $chkSalida,
-        $chkEntrada
+        $chkEntrada,
+        $medidas
     ) {
 
         $respuesta = new RespuestaBD();
@@ -1318,7 +1432,7 @@ class CatalogosModel
                 SET
                 producto=:producto,idCalibre=:idCalibre,sku=:sku,idAncho=:idAncho,
                 precioGen=:precioGen,precioRev=:precioRev,largo=:largo,idUnidadFactura=:idUnidadFactura,
-                salida=:chkSalida,entrada=:chkEntrada,
+                salida=:chkSalida,entrada=:chkEntrada,medidasreves=:medidas,
                 pesoTeorico=:pesoTeorico,idTipo=:idTipo,idUnidad=:idUnidad,activo='1'";
 
 
@@ -1328,6 +1442,11 @@ class CatalogosModel
         // sanitize
         $producto = htmlspecialchars(strip_tags($producto));
 
+        if ($medidas) {
+            $medidas = 1;
+        } else {
+            $medidas = 0;
+        }
 
         // bind values
         $stmt->bindParam(":precioRev", $precioRev);
@@ -1340,6 +1459,7 @@ class CatalogosModel
         $stmt->bindParam(":idTipo", $idTipo);
         $stmt->bindParam(":idUnidad", $idUnidad);
         $stmt->bindParam(":largo", $largo);
+        $stmt->bindParam(":medidas", $medidas);
         $stmt->bindParam(":idUnidadFactura", $idUnidadFactura);
         $stmt->bindParam(":pesoTeorico", $pesoTeorico);
         $stmt->bindParam(":chkSalida", $chkSalida);
@@ -1364,7 +1484,7 @@ class CatalogosModel
     }
 
 
-    function agregarCliente($cliente, $rfc, $direccion, $representante, $telefono, $mail, $tipoprecio, $comentarios, $idUso, $direccionentrega)
+    function agregarCliente($cliente, $rfc, $direccion, $representante, $telefono, $mail, $tipoprecio, $comentarios, $idUso, $direccionentrega,$idVendedor)
     {
 
         $respuesta = new RespuestaBD();
@@ -1375,7 +1495,7 @@ class CatalogosModel
                 SET
                 cliente=:cliente,rfc=:rfc,direccion=:direccion,tipoprecio=:tipoprecio,
                 telefono=:telefono,mail=:mail,idUso=:idUso,
-                comentarios=:comentarios,direccionentrega=:direccionentrega,
+                comentarios=:comentarios,direccionentrega=:direccionentrega,idVendedor=:idVendedor,
                 representante=:representante,activo=1";
 
 
@@ -1403,6 +1523,7 @@ class CatalogosModel
         $stmt->bindParam(":idUso", $idUso);
         $stmt->bindParam(":tipoprecio", $tipoprecio);
         $stmt->bindParam(":comentarios", $comentarios);
+        $stmt->bindParam(":idVendedor", $idVendedor);
 
 
 
@@ -1487,6 +1608,90 @@ class CatalogosModel
 
         // bind values
         $stmt->bindParam(":tipo", $tipo);
+
+
+        // execute query
+        if ($stmt->execute()) {
+            $idInsertado = $this->conn->lastInsertId();
+            $respuesta->exito = true;
+            $respuesta->mensaje = "";
+            $respuesta->valor = $idInsertado;
+            return $respuesta;
+        } else {
+            $respuesta->exito = false;
+            $mensaje = $stmt->errorInfo();
+            $respuesta->mensaje = "Ocurrió un problema actualizando";
+            return $respuesta;
+        }
+    }
+
+
+
+    function agregarChofer($chofer)
+    {
+
+        $respuesta = new RespuestaBD();
+
+
+        $query = "INSERT INTO
+                    choferes
+                SET
+                chofer=:chofer,activo=1";
+
+
+        // prepare query
+        $stmt = $this->conn->prepare($query);
+
+        // sanitize
+        $chofer = htmlspecialchars(strip_tags($chofer));
+
+
+
+        // bind values
+        $stmt->bindParam(":chofer", $chofer);
+
+
+        // execute query
+        if ($stmt->execute()) {
+            $idInsertado = $this->conn->lastInsertId();
+            $respuesta->exito = true;
+            $respuesta->mensaje = "";
+            $respuesta->valor = $idInsertado;
+            return $respuesta;
+        } else {
+            $respuesta->exito = false;
+            $mensaje = $stmt->errorInfo();
+            $respuesta->mensaje = "Ocurrió un problema actualizando";
+            return $respuesta;
+        }
+    }
+
+
+
+    function agregarCamion($camion, $placas)
+    {
+
+        $respuesta = new RespuestaBD();
+
+
+        $query = "INSERT INTO
+                    camiones
+                SET
+                camion=:camion,placas=:placas,activo=1";
+
+
+        // prepare query
+        $stmt = $this->conn->prepare($query);
+
+        // sanitize
+        $camion = htmlspecialchars(strip_tags($camion));
+        $placas = htmlspecialchars(strip_tags($placas));
+
+
+
+        // bind values
+        $stmt->bindParam(":camion", $camion);
+        $stmt->bindParam(":placas", $placas);
 
 
         // execute query
@@ -1648,7 +1853,7 @@ class CatalogosModel
         $largo,
         $idUnidadFactura,
         $entrada,
-        $salida
+        $salida,$medidasreves
     ) {
 
         $respuesta = new RespuestaBD();
@@ -1664,7 +1869,7 @@ class CatalogosModel
                 producto=:producto,idCalibre=:idCalibre,
                 precioGen=:precioGen,precioRev=:precioRev,idAncho=:idAncho,
                 largo=:largo,idUnidadFactura=:idUnidadFactura,
-                entrada=:entrada,salida=:salida,
+                entrada=:entrada,salida=:salida,medidasreves=:medidasreves,
                 idTipo=:idTipo,idUnidad=:idUnidad,pesoTeorico=:pesoTeorico
                  where idProducto=" . $idProducto;
 
@@ -1688,6 +1893,9 @@ class CatalogosModel
         $stmt->bindParam(":pesoTeorico", $pesoTeorico);
         $stmt->bindParam(":largo", $largo);
         $stmt->bindParam(":idUnidadFactura", $idUnidadFactura);
+        $stmt->bindParam(":medidasreves", $medidasreves);
+
+        
 
 
 
@@ -1728,7 +1936,7 @@ class CatalogosModel
         $tipoprecio,
         $comentarios,
         $idUso,
-        $direccionentrega
+        $direccionentrega,$idVendedor
     ) {
 
         $respuesta = new RespuestaBD();
@@ -1738,7 +1946,7 @@ class CatalogosModel
                 SET
                 cliente=:cliente,rfc=:rfc,telefono=:telefono,comentarios=:comentarios,
                 idUso=:idUso,
-                mail=:mail,tipoprecio=:tipoprecio,direccionentrega=:direccionentrega,
+                mail=:mail,tipoprecio=:tipoprecio,direccionentrega=:direccionentrega,idVendedor=:idVendedor,
                 direccion=:direccion,representante=:representante where idCliente=" . $idCliente;
         $stmt = $this->conn->prepare($query);
 
@@ -1758,6 +1966,7 @@ class CatalogosModel
 
 
 
+        $stmt->bindParam(":idVendedor", $idVendedor);
         $stmt->bindParam(":comentarios", $comentarios);
         $stmt->bindParam(":idUso", $idUso);
         $stmt->bindParam(":cliente", $cliente);
@@ -1865,11 +2074,81 @@ class CatalogosModel
         $stmt = $this->conn->prepare($query);
 
         // sanitize
-        $tipo = htmlspecialchars(strip_tags($ancho));
+        $ancho = htmlspecialchars(strip_tags($ancho));
 
 
 
         $stmt->bindParam(":ancho", $ancho);
+
+
+
+        if ($stmt->execute()) {
+            $respuesta->exito = true;
+            $respuesta->mensaje = "";
+            return $respuesta;
+        } else {
+            $respuesta->exito = false;
+            $mensaje = $stmt->errorInfo();
+            $respuesta->mensaje = "Ocurrió un problema actualizando";
+            return $respuesta;
+        }
+    }
+
+
+
+    function actualizarChofer($chofer, $idChofer)
+    {
+
+        $respuesta = new RespuestaBD();
+
+        $query = "UPDATE
+                    choferes
+                SET
+                chofer=:chofer where idChofer=" . $idChofer;
+        $stmt = $this->conn->prepare($query);
+
+        // sanitize
+        $chofer = htmlspecialchars(strip_tags($chofer));
+
+
+
+        $stmt->bindParam(":chofer", $chofer);
+
+
+
+        if ($stmt->execute()) {
+            $respuesta->exito = true;
+            $respuesta->mensaje = "";
+            return $respuesta;
+        } else {
+            $respuesta->exito = false;
+            $mensaje = $stmt->errorInfo();
+            $respuesta->mensaje = "Ocurrió un problema actualizando";
+            return $respuesta;
+        }
+    }
+
+
+
+    function actualizarCamion($camion, $placas, $idCamion)
+    {
+
+        $respuesta = new RespuestaBD();
+
+        $query = "UPDATE
+                    camiones
+                SET
+                camion=:camion,placas=:placas where idCamion=" . $idCamion;
+        $stmt = $this->conn->prepare($query);
+
+        // sanitize
+        $camion = htmlspecialchars(strip_tags($camion));
+        $placas = htmlspecialchars(strip_tags($placas));
+
+
+
+        $stmt->bindParam(":placas", $placas);
+        $stmt->bindParam(":camion", $camion);
 
 
 
@@ -1964,6 +2243,63 @@ class CatalogosModel
                    tipos
                 SET
                     activo=" . $activo . " where idTipo=" . $idTipo;
+
+        // prepare query
+        $stmt = $this->conn->prepare($query);
+
+        if ($stmt->execute()) {
+            $respuesta->exito = true;
+            $respuesta->mensaje = "";
+            return $respuesta;
+        } else {
+            $respuesta->exito = false;
+            $respuesta->mensaje = "Ocurrió un problema togglenizando";
+            return $respuesta;
+        }
+    }
+
+
+
+    function toggleCamion($idCamion, $activo)
+    {
+
+        $respuesta = new RespuestaBD();
+
+        // check if more than 0 record found
+
+        // query to insert record
+        $query = "UPDATE
+                   camiones
+                SET
+                    activo=" . $activo . " where idCamion=" . $idCamion;
+
+        // prepare query
+        $stmt = $this->conn->prepare($query);
+
+        if ($stmt->execute()) {
+            $respuesta->exito = true;
+            $respuesta->mensaje = "";
+            return $respuesta;
+        } else {
+            $respuesta->exito = false;
+            $respuesta->mensaje = "Ocurrió un problema togglenizando";
+            return $respuesta;
+        }
+    }
+
+
+    function toggleChofer($idChofer, $activo)
+    {
+
+        $respuesta = new RespuestaBD();
+
+        // check if more than 0 record found
+
+        // query to insert record
+        $query = "UPDATE
+                   choferes
+                SET
+                    activo=" . $activo . " where idChofer=" . $idChofer;
 
         // prepare query
         $stmt = $this->conn->prepare($query);

@@ -76,7 +76,7 @@ $(document).ready(function () {
         var prodPesoTeorico = $('#' + id).children().find('.prodPesoTeorico').val();
         var idProducto = $('#' + id).children().find('.idProducto').val();
         $('#recibirMateria').prop('disabled', false);
-        $('#recibirMateria').text('Recibir Materia');
+        $('#recibirMateria').text('Recibir Material');
 
         $('#productoPesoTeoricoM').val(prodPesoTeorico);
         $('#divPesoTeorico').hide();

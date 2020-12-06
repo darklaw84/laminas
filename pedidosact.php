@@ -45,6 +45,18 @@ if ($entro == "3") {
 
 
 
+if (isset($_POST['idCotizacionDetCambiar'])) {
+    $idCotizacionDetCambiar = $_POST['idCotizacionDetCambiar'];
+
+    if (isset($_POST['cantidadpcambiar'])) {
+        $cantidadCambiar = $_POST['cantidadpcambiar'];
+        $contCotizaciones->actualizarCantidadCotDet($idCotizacionDetCambiar, $cantidadCambiar);
+    }
+
+
+    $contCotizaciones->recalcularCotizacion($idCotizacion);
+}
+
 
 
 
@@ -58,8 +70,14 @@ if (isset($idCotizacion)) {
 
         $cliente = $cotizacion['cliente'];
         $descuento = $cotizacion['descuento'];
+        $tieneRemision = $cotizacion['tieneRemision'];
         $grantotal = $cotizacion['grantotal'];
         $subtotal = $cotizacion['montototal'];
+        $costoEnvio = $cotizacion['costoEnvio'];
+        if ($costoEnvio == "") {
+            $costoEnvio = 0;
+        }
+        $idUsuario = $cotizacion['idUsuario'];
         $productosOrden = $cotizacion['productos'];
         if ($cotizacion['pedido'] == 1) {
             $pedido = true;
@@ -116,46 +134,40 @@ if (isset($idCotizacion)) {
                                     </div>
                                 </div>
                                 <div class="col-md-2">
-                                <label for="proveedor">&nbsp;</label>
+                                    <label for="proveedor">&nbsp;</label>
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <button type="button" id="btnExtras" title="Actualizar Extras Pedido" class="btn btn-info" name="signup" value="Sign up">Extras</button>
+                                            <?php if (!$tieneRemision && ($idUsuario == $_SESSION['idUsr'] || $_SESSION['verCotizaciones'] == "1")) { ?>
+                                                <button type="button" id="btnExtras" title="Actualizar Extras Pedido" class="btn btn-info" name="signup" value="Sign up">Extras</button>
+                                            <?php } ?>
                                         </div>
                                         <div class="col-md-4">
-                                            <a href="imprimirPedido.php?idCotizacion=<?php echo $idCotizacion; ?>&idU=<?php echo $_SESSION['idUsr']?>" target="_blank"><button type="button" title="Imprimir Pedido" class="mb-2 mr-2 btn-icon btn-icon-only btn btn-warning"><i class="pe-7s-print btn-icon-wrapper"> </i></button></a>
+                                            <a href="imprimirPedido.php?idCotizacion=<?php echo $idCotizacion; ?>&idU=<?php echo $_SESSION['idUsr'] ?>" target="_blank"><button type="button" title="Imprimir Pedido" class="mb-2 mr-2 btn-icon btn-icon-only btn btn-warning"><i class="pe-7s-print btn-icon-wrapper"> </i></button></a>
 
                                         </div>
                                         <div class="col-md-4">
-                                          
+
 
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label for="psc">Subtotal</label>
                                             <div>
                                                 <input disabled="" size="5" class="form-control" value="<?php if (isset($subtotal)) {
-                                                                                                            echo "$ " . number_format($subtotal, 2, '.', ',');
+                                                                                                            echo "$ " . number_format($subtotal + ($costoEnvio / 1.16), 2, '.', ',');
                                                                                                         } ?>" />
 
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <label for="descuento">Descuento %</label>
-                                            <div>
-                                                <input type="text" disabled class="form-control" id="descuentoCam" name="descuentoCam" value="<?php if (isset($descuento)) {
-                                                                                                                                                    echo $descuento;
-                                                                                                                                                } ?>" />
 
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label for="psc">Total Pedido</label>
                                             <div>
                                                 <input disabled="" size="5" class="form-control" value="<?php if (isset($grantotal)) {
-                                                                                                            echo "$ " . number_format($grantotal, 2, '.', ',');
+                                                                                                            echo "$ " . number_format($grantotal + $costoEnvio, 2, '.', ',');
                                                                                                         } ?>" />
 
                                             </div>
@@ -165,7 +177,7 @@ if (isset($idCotizacion)) {
 
 
                             </div>
-                          
+
                         </div>
 
 
@@ -196,33 +208,28 @@ if (isset($idCotizacion)) {
                         <?php
                         $cont = 1;
                         foreach ($productosOrden as $reg) {
-                            
-                            if(is_numeric($reg['largo']))
-                            {
-                                $largo=$reg['largo'];
-                                $mostrarbotonMetros=false;
+
+                            if (is_numeric($reg['largo'])) {
+                                $largo = $reg['largo'];
+                                $mostrarbotonMetros = false;
+                            } else {
+                                $largo = "";
                             }
-                            else
-                            {
-                                $largo="";
-                            }
-                            
-                            ?>
+
+                        ?>
                             <tr>
-                                <?php if ($reg['metros'] > 0) {
-                                    $totalPartida = $reg['metros'] * $reg['preciounitario'] * $reg['cantidad'];
-                                    $precioPorPieza = $totalPartida / $reg['cantidad'];
-                                } else {
-                                    $totalPartida = $reg['preciounitario'] * $reg['cantidad'];
-                                    $precioPorPieza = "0.00";
-                                } ?>
+                                <?php
+                                $totalPartida =  $reg['preciounitario'] * $reg['cantidad'];
+                                ?>
                                 <td><?php echo $cont ?></td>
-                                <td><?php echo strtoupper($reg['sku'] . " ".$reg['producto'] . " ". $largo." ". $reg['ancho'] . " " .$reg['calibre'] . " " . $reg['tipo']);   ?></td>
+                                <td><?php echo strtoupper($reg['sku'] . " " . $reg['producto'] . " " . $largo . " " . $reg['ancho'] . " " . $reg['calibre'] . " " . $reg['tipo']);   ?></td>
                                 <td><?php echo $reg['unidad'] ?></td>
-                                <td><?php echo $reg['cantidad'] ?></td>
-                                <td><?php echo "$ " . number_format($reg['preciounitario'], 2, '.', ',') ?></td>
+                                <td><?php if ($_SESSION['pedidoCantidades'] == "1") { ?><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="KCA<?php echo $reg['idCotizacionDet'] ?>" class="mr-2 mb-2 btn btn-dark"><?php echo number_format($reg['cantidad'], 2, '.', ',') ?></button><?php } else {
+                                                                                                                                                                                                                                                                                                                            echo number_format($reg['cantidad'], 2, '.', ',');
+                                                                                                                                                                                                                                                                                                                        } ?></td>
+                                <td><?php echo "$ " . number_format($reg['precioUM'], 2, '.', ',') ?></td>
                                 <td><?php echo $reg['metros'] ?></td>
-                                <td><?php echo "$ " . number_format($precioPorPieza, 2, '.', ',') ?></td>
+                                <td><?php echo "$ " . number_format($reg['preciounitario'], 2, '.', ',') ?></td>
                                 <td><?php echo "$ " . number_format($totalPartida, 2, '.', ',') ?></td>
                                 <td><a href="index.php?p=cotizacionesact&entro=3&idCotizacion=<?php echo $idCotizacion; ?>&idCotizacionDet=<?php echo $reg['idCotizacionDet'] ?>" <?php if (isset($pedido) && $pedido == "1") {
                                                                                                                                                                                         echo "style='display:none;'";
@@ -242,6 +249,41 @@ if (isset($idCotizacion)) {
             </div>
 
 
+            <?php foreach ($productosOrden as $reg) { ?>
+
+
+                <div id="popover-content-KCA<?php echo  $reg['idCotizacionDet'] ?>" class="d-none">
+                    <div class="dropdown-menu-header">
+                        <div class="dropdown-menu-header-inner bg-primary">
+
+                            <div class="menu-header-content">
+                                <form action="index.php?p=pedidosact" method="POST">
+                                    <div class="form-row">
+                                        <div class="col-md-6">
+                                            <label for="porsobcos">Cantidad</label>
+                                            <div>
+                                                <input type="number" size="18" step="0.01" class="form-control" id="cantidadpcambiar" name="cantidadpcambiar" value="<?php echo number_format($reg['cantidad'], 2, '.', '') ?>" />
+
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div>
+
+                                                <input type="hidden" name="idCotizacionDetCambiar" value=" <?php echo  $reg['idCotizacionDet'] ?>" />
+
+                                                <input type="hidden" name="idCotizacion" value="<?php echo $idCotizacion; ?>" />
+
+
+                                                <button type="submit" class="btn btn-danger" name="signup" value="Sign up">Cambiar</button> </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            <?php } ?>
 
 
 

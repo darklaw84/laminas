@@ -54,6 +54,7 @@ $registros = $respuesta->registros;
                             <th>Fecha</th>
                             <th>Partidas</th>
                             <th>Imprimir</th>
+                            <th>Cancelar</th>
 
 
                         </tr>
@@ -71,9 +72,13 @@ $registros = $respuesta->registros;
 
 
                                 <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="<?php echo $reg['idRemision'] ?>" class="mr-2 mb-2 btn btn-dark"><?php echo count($reg['detalle'], COUNT_NORMAL) ?> Partidas</button>
-                                <td><a target="_blank" href="imprimirRemision.php?idRemision=<?php echo $reg['idRemision']; ?>" class="btn btn-warning mt-2 mb-2 mr-2">Imprimir Remisión</a>
-                                <a href="#" class="btn btn-primary" data-role="imprimeCartaPorte" data-id="<?php echo $reg['idRemision'] ?>">Carta Porte</a></td>
-
+                                <td> <a href="#" class="btn btn-warning" data-role="imprimeRemision" data-id="R<?php echo $reg['idRemision'] ?>">Imprimir Remisión</a>
+                                    <a href="#" class="btn btn-primary" data-role="imprimeCartaPorte" data-id="<?php echo $reg['idRemision'] ?>">Carta Porte</a></td>
+                                <td>
+                                    <?php if ($_SESSION['cancelarRemisiones'] == "1") { ?>
+                                        <a href="#" class="btn btn-warning" data-role="cancelarRemision" data-id="<?php echo $reg['idRemision'] ?>">Cancelar</a>
+                                    <?php } ?>
+                                </td>
                             </tr>
                         <?php } ?>
 
@@ -106,6 +111,7 @@ $registros = $respuesta->registros;
                             <th>Cantidad</th>
                             <th>Usuario</th>
                             <th>Fecha</th>
+                            <th>Almacen</th>
 
 
 
@@ -113,15 +119,15 @@ $registros = $respuesta->registros;
                     </thead>
                     <tbody>
 
-                        <?php foreach ($reg['detalle'] as $reg) { 
-                            
+                        <?php foreach ($reg['detalle'] as $reg) {
+
                             if (is_numeric($reg['largo'])) {
                                 $largo = $reg['largo'];
                                 $largoancho =  $largo . " " . $reg['ancho'];
                             } else {
                                 $largo = $reg['metros'];
                                 $largoancho =  $largo . " " . $reg['ancho'];
-                            }?>
+                            } ?>
                             <tr>
 
                                 <td><?php echo $reg['sku'] ?></td>
@@ -129,9 +135,10 @@ $registros = $respuesta->registros;
                                 <td><?php echo $reg['calibre'] ?></td>
                                 <td><?php echo $largoancho ?></td>
                                 <td><?php echo $reg['unidadFactura'] ?></td>
-                                <td><?php echo $reg['cantidad'] ?></td>
+                                <td><?php echo number_format($reg['cantidad'], 2, '.', ',') ?></td>
                                 <td><?php echo $reg['usuario'] ?></td>
                                 <td><?php echo $reg['fecha'] ?></td>
+                                <td><?php echo $reg['almacen'] ?></td>
 
 
 

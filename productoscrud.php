@@ -24,10 +24,11 @@ if ($idProducto != "" && $tipo == "update") {
   $entrada = $_POST['entrada'];
   $salida = $_POST['salida'];
 
+  $medidasreves = $_POST['medidasreves'];
   
  
   $respuesta = $controller->actualizarProducto($producto, $idProducto,$idCalibre,
-  $idTipo,$idUnidad,$pesoTeorico,$precioGen,$precioRev,$idAncho,$largo,$idUnidadFactura,$entrada,$salida);
+  $idTipo,$idUnidad,$pesoTeorico,$precioGen,$precioRev,$idAncho,$largo,$idUnidadFactura,$entrada,$salida,$medidasreves);
   if ($respuesta->exito) {
     echo "aqui puedes mandar un json, pero aqui no lo ocupamos";
   } else {

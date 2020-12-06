@@ -55,8 +55,12 @@ if (isset($_POST['entro'])) {
                     $_SESSION['inventarios'] = $res->registros[0]['inventarios'];
                     $_SESSION['verCotizaciones'] = $res->registros[0]['verCotizaciones'];
                     $_SESSION['traspasos'] = $res->registros[0]['traspasos'];
+                    $_SESSION['cancelarPedidos'] = $res->registros[0]['cancelarPedidos'];
+                    $_SESSION['agregarAbonos'] = $res->registros[0]['agregarAbonos'];
+                    $_SESSION['pedidoCantidades'] = $res->registros[0]['pedidoCantidades'];
+                    $_SESSION['cancelarRemisiones'] = $res->registros[0]['cancelarRemisiones'];
 
-              
+                 
                     
                     echo "<script>window.setTimeout(function() { window.location = 'index.php' }, 10);</script>";
                 } else {

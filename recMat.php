@@ -96,11 +96,11 @@ if ($entro == "1") {
                         <thead>
                             <tr>
                                 <th>Producto</th>
-                                <th>Unidad</th>
+                                <th>UM</th>
                                 <th>Cant Ordenada</th>
                                 <th>Cant Recibida</th>
-                                <th>Peso Ordenado</th>
-                                <th>Peso Recibido</th>
+                               <!-- <th>Peso Ordenado</th>
+                                <th>Peso Recibido</th> -->
                                 <th>Recibir</th>
 
                             </tr>
@@ -120,10 +120,10 @@ if ($entro == "1") {
                                         <a>
                                             <td data-target="producto"><?php echo strtoupper($ins['sku'] . " " . $ins['producto'] . " " . $largo . " " . $ins['ancho'] . " " . $ins['calibre'] . " " . $ins['tipo']) ?></td>
                                             <td><?php echo $ins['unidad'] ?></td>
-                                            <td><?php echo $ins['cantidad'] ?></td>
-                                            <td><?php echo $ins['totalCantidad'] ?></td>
-                                            <td><?php echo $ins['pesoTeorico'] ?></td>
-                                            <td><?php echo $ins['total'] ?></td>
+                                            <td><?php echo number_format($ins['cantidad'], 2, '.', ',') ?></td>
+                                            <td><?php echo number_format($ins['totalCantidad'], 2, '.', ',');?></td>
+                                          <!--  <td><?php echo $ins['pesoTeorico'] ?></td>
+                                            <td><?php echo $ins['total'] ?></td>-->
                                             <td><input class="idUnidad" type="hidden" value="<?php echo $ins['idUnidad'] ?>">
                                                 <input class="prodPesoTeorico" type="hidden" value="<?php echo $ins['prodPesoTeorico'] ?>">
                                                 <input class="idProducto" type="hidden" value="<?php echo $ins['idProducto'] ?>">

@@ -109,7 +109,7 @@ class OrdenesModel
 
     function obtenerOrden($idOrden)
     {
-        $query = "SELECT  co.*,cl.proveedor FROM  ordenescompra co
+        $query = "SELECT  co.*,cl.proveedor,cl.telefono FROM  ordenescompra co
              inner join proveedores cl on co.idProveedor = cl.idProveedor
                where idOrden=" . $idOrden;
         // prepare query statement
@@ -149,6 +149,7 @@ class OrdenesModel
                     "fecha" => $fecha,
                     "fechaRequerida" => $fechaRequerida,
                     "proveedor" => $proveedor,
+                    "telefono" => $telefono,
                     "estatus" => $estatus,
                     "comentarios" => $comentarios,
                     "usuario" => $usuario,
@@ -196,7 +197,7 @@ class OrdenesModel
 
         $porcentaje = $this->obtenerValorParametro("porcentajeRecepcion");
 
-        $query = "SELECT  od.*,u.unidad,p.producto,c.calibre,t.tipo,
+        $query = "SELECT  od.*,u.unidad,p.producto,c.calibre,t.tipo,p.medidasreves,
         p.pesoTeorico prodPesoTeorico,p.largo,p.sku,a.ancho FROM  ordencompradetalle od
              
              inner join productos p on p.idProducto=od.idProducto
@@ -280,6 +281,7 @@ class OrdenesModel
                     "unidad" => $unidad,
                     "idUnidad" => $idUnidad,
                     "calibre" => $calibre,
+                    "medidasreves" => $medidasreves,
                     "tipo" => $tipo,
                     "pesoTeorico" => $pesoOrdenado,
                     "sku" => $sku,

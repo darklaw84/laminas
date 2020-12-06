@@ -26,6 +26,7 @@ if (isset($idCotizacion)) {
         $costoEnvio = $respPro->registros[0]['costoEnvio'];
 
 
+
         $productosCotizacion = $respPro->registros[0]['productos'];
     }
 
@@ -77,13 +78,13 @@ class PDF extends FPDF
         $tamLetra = 8;
         $this->Ln(3);
         $this->SetFont('Arial', '', $tamLetra);
-        $this->SetXY(190, 20);
+        $this->SetXY(185, 20);
         $this->Cell(50, $alto, utf8_decode('FOLIO:'), $this->bor, 0, 'R');
         $this->Cell(50, $alto, strtoupper(utf8_decode(str_pad($this->cotnum, 3, "0", STR_PAD_LEFT))), $this->bor, 0, 'R');
-        $this->SetXY(190, 27);
+        $this->SetXY(185, 27);
         $this->Cell(50, $alto, utf8_decode('FECHA DE ELABORACIÓN:'), $this->bor, 0, 'R');
         $this->Cell(50, $alto, date("d") . " de " . $letrasa->convertirMes(date('m')) . " de " . date('Y'), $this->bor, 0, 'R');
-        $this->SetXY(150, 33);
+        $this->SetXY(145, 33);
         $this->Cell(90, $alto, utf8_decode('LUGAR EXPEDICIÓN:'), $this->bor, 0, 'R');
         $this->Cell(50, $alto, utf8_decode('SANTIAGO DE QUERÉTARO'), $this->bor, 0, 'R');
 
@@ -113,19 +114,19 @@ class PDF extends FPDF
         $this->Cell(40, $alto, utf8_decode('MAIL:'), $this->bor, 0, 'R');
         $this->SetFont('Arial', 'U', $tamLetra);
         $this->Cell(200, $alto, strtoupper(utf8_decode($this->mail)), $this->bor, 0, 'L');
-        $this->SetXY(5, 58);
+        $this->SetXY(10, 58);
         $this->SetFont('Arial', 'b', 8);
         $this->SetTextColor(255, 255, 255);
-        $this->Cell(10, $alto + 1, utf8_decode('#'), 1, 0, 'C', true);
-        $this->Cell(16, $alto + 1, utf8_decode('CANTIDAD'), 1, 0, 'C', true);
-        $this->Cell(18, $alto + 1, utf8_decode('UM'), 1, 0, 'C', true);
-        $this->Cell(168, $alto + 1, utf8_decode('DESCRIPCIÓN'), 1, 0, 'C', true); //165
+        $this->Cell(15, $alto + 1, utf8_decode('#'), 1, 0, 'C', true);
+        $this->Cell(20, $alto + 1, utf8_decode('CANTIDAD'), 1, 0, 'C', true);
+        $this->Cell(20, $alto + 1, utf8_decode('UM'), 1, 0, 'C', true);
+        $this->Cell(120, $alto + 1, utf8_decode('DESCRIPCIÓN'), 1, 0, 'C', true); //165
 
-        $this->Cell(27, $alto + 1, utf8_decode('MEDIDAS'), 1, 0, 'C', true);
-        $this->Cell(26, $alto + 1, utf8_decode('PRECIO UNITARIO'), 1, 0, 'C', true);
+        $this->Cell(40, $alto + 1, utf8_decode('MEDIDAS'), 1, 0, 'C', true);
+        $this->Cell(30, $alto + 1, utf8_decode('PRECIO UNITARIO'), 1, 0, 'C', true);
         //$this->Cell(18, 10, utf8_decode('METROS'), 1, 0, 'C', true);
         //$this->Cell(22, 10, utf8_decode('$ X PIEZA'), 1, 0, 'C', true);
-        $this->Cell(22, $alto + 1, utf8_decode('TOTAL'), 1, 0, 'C', true);
+        $this->Cell(30, $alto + 1, utf8_decode('TOTAL'), 1, 0, 'C', true);
         $this->SetTextColor(0, 0, 0);
 
         $this->Ln(5);
@@ -173,7 +174,11 @@ $altodetalle = 5;
 foreach ($productosCotizacion as $reg) {
 
     if (is_numeric($reg['largo'])) {
-        $largoancho = $reg['largo'] . " " . $reg['ancho'];;
+        if ($reg['medidasreves'] == "1") {
+            $largoancho = $reg['ancho'] . " " . $reg['largo'] . " M";;
+        } else {
+            $largoancho = $reg['largo'] . " " . $reg['ancho'];;
+        }
     } else {
         $largoancho = $reg['metros'] . " " . $reg['ancho'];
     }
@@ -187,58 +192,57 @@ foreach ($productosCotizacion as $reg) {
     } else {
         $pdf->SetFillColor(255, 255, 255);
     }
-    $pdf->SetX(5);
-    $pdf->Cell(10, $altodetalle, $contador, $bor, 0, 'C', true);
-    $pdf->Cell(16, $altodetalle, $reg['cantidad'], $bor, 0, 'C', true);
-    $pdf->Cell(18, $altodetalle, $reg['unidadFactura'], $bor, 0, 'C', true);
+    $pdf->SetX(10);
+    $pdf->Cell(15, $altodetalle, $contador, $bor, 0, 'C', true);
+    $pdf->Cell(20, $altodetalle, number_format($reg['cantidad'], 2, '.', ','), $bor, 0, 'C', true);
+    $pdf->Cell(20, $altodetalle, $reg['unidadFactura'], $bor, 0, 'C', true);
     $descripcion = strtoupper($reg['producto'] . " " . $reg['calibre'] . " " . $reg['tipo']);
     $descripcion = str_replace("N/A", "", $descripcion);
-    $pdf->Cell(168, $altodetalle, $descripcion, $bor, 0, 'C', true);
+    $pdf->Cell(120, $altodetalle, utf8_decode($descripcion), $bor, 0, 'C', true);
 
 
     $largoancho = str_replace('&quot;', '"', $largoancho);
     $largoancho = str_replace('N/A', '', $largoancho);
-    $pdf->Cell(27, $altodetalle, strtoupper($largoancho), $bor, 0, 'C', true);
-    $pdf->Cell(3, $altodetalle, "$ ", 'BT', 0, 'C', true);
-    $pdf->Cell(23, $altodetalle, number_format($reg['preciounitario'], 2, '.', ','), 'BTR', 0, 'R', true);
+    $pdf->Cell(40, $altodetalle, strtoupper($largoancho), $bor, 0, 'C', true);
+    $pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', true);
+    $pdf->Cell(27, $altodetalle, number_format($reg['preciounitario'] / 1.16, 2, '.', ','), 'BTR', 0, 'R', true);
     // $pdf->Cell(18, 6,  number_format($reg['metros'], 2, '.', ''), $bor, 0, 'C', true);
     // $pdf->Cell(22, 6, "$ " . number_format($precioPorPieza, 2, '.', ','), $bor, 0, 'C', true);
-    $pdf->Cell(3, $altodetalle, "$ ", 'BT', 0, 'C', true);
-    $pdf->Cell(19, $altodetalle, number_format($totalPartida, 2, '.', ','), 'BTR', 1, 'R', true);
+    $pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', true);
+    $pdf->Cell(27, $altodetalle, number_format($totalPartida / 1.16, 2, '.', ','), 'BTR', 1, 'R', true);
 
     $contador++;
 }
 
+if ($contador % 2 == 0) {
+    $pdf->SetFillColor(230, 230, 230);
+} else {
+    $pdf->SetFillColor(255, 255, 255);
+}
+
 if ($costoEnvio > 0) {
-    $pdf->SetX(5);
-    $pdf->Cell(10, $altodetalle, $contador, $bor, 0, 'C', true);
-    $pdf->Cell(16, $altodetalle, "1", $bor, 0, 'C', true);
-    $pdf->Cell(18, $altodetalle, "", $bor, 0, 'C', true);
-    $pdf->Cell(168, $altodetalle, utf8_decode("ENVÍO"), $bor, 0, 'C', true);
+    $pdf->SetX(10);
+    $pdf->Cell(15, $altodetalle, $contador, $bor, 0, 'C', true);
+    $pdf->Cell(20, $altodetalle, "1", $bor, 0, 'C', true);
+    $pdf->Cell(20, $altodetalle, "", $bor, 0, 'C', true);
+    $pdf->Cell(120, $altodetalle, utf8_decode("MANIOBRAS"), $bor, 0, 'C', true);
 
 
 
-    $pdf->Cell(27, $altodetalle, "", $bor, 0, 'C', true);
-    $pdf->Cell(3, $altodetalle, "$ ", 'BT', 0, 'C', true);
-    $pdf->Cell(23, $altodetalle, number_format($costoEnvio, 2, '.', ','), 'BTR', 0, 'R', true);
+    $pdf->Cell(40, $altodetalle, "", $bor, 0, 'C', true);
+    $pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', true);
+    $pdf->Cell(27, $altodetalle, number_format($costoEnvio / 1.16, 2, '.', ','), 'BTR', 0, 'R', true);
 
-    $pdf->Cell(3, $altodetalle, "$ ", 'BT', 0, 'C', true);
-    $pdf->Cell(19, $altodetalle, number_format($costoEnvio, 2, '.', ','), 'BTR', 1, 'R', true);
-    $subtotal = $subtotal + $costoEnvio;
+    $pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', true);
+    $pdf->Cell(27, $altodetalle, number_format($costoEnvio / 1.16, 2, '.', ','), 'BTR', 1, 'R', true);
+    $subtotal = $subtotal + ($costoEnvio/1.16);
 }
 
 $gris = 230;
 $pdf->SetX(244);
-$pdf->SetFont('Arial', 'B', 7);
-$pdf->SetFillColor($gris);
-$pdf->Cell(26,  $altodetalle, "GRAN TOTAL", $bor, 0, 'C', true);
-$pdf->SetFont('Arial', '', 7);
-$pdf->Cell(3, $altodetalle, "$ ", 'BT', 0, 'C', true);
-$pdf->Cell(19,  $altodetalle, number_format($subtotal, 2, '.', ','), 'BTR', 1, 'R', true);
-$pdf->SetFillColor(255);
-$pdf->SetX(244);
-$pdf->SetFont('Arial', 'B', 7);
-$pdf->Cell(26,  $altodetalle, "DESCUENTO", $bor, 0, 'C');
+
+
+
 
 
 if ($descuento > 0) {
@@ -251,41 +255,38 @@ $grantotal = $base + $iva;
 $grantotal = round($grantotal);
 $base = $grantotal / 1.16;
 $iva = $grantotal * .16 / 1.16;
-$pdf->SetFont('Arial', '', 7);
-$pdf->Cell(3, $altodetalle, "$ ", 'BT', 0, 'C', false);
-$pdf->Cell(19,  $altodetalle, number_format($descuento, 2, '.', ','), 'BTR', 1, 'R');
 
 
 
-
-$pdf->SetX(244);
+$pdf->SetX(225);
 $pdf->SetFont('Arial', 'B', 7);
 $pdf->SetFillColor($gris);
-$pdf->Cell(26,  $altodetalle, "SUBTOTAL", $bor, 0, 'C', true);
+$pdf->Cell(30,  $altodetalle, "SUBTOTAL", $bor, 0, 'C', true);
 $pdf->SetFont('Arial', '', 7);
-$pdf->Cell(3, $altodetalle, "$ ", 'BT', 0, 'C', true);
-$pdf->Cell(19,  $altodetalle, number_format($subtotal - $descuento, 2, '.', ','), 'BTR', 1, 'R', true);
+$pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', true);
+$pdf->Cell(27,  $altodetalle, number_format($subtotal - $descuento, 2, '.', ','), 'BTR', 1, 'R', true);
 
-$pdf->SetX(244);
+$pdf->SetX(225);
 $pdf->SetFont('Arial', 'B', 7);
-$pdf->Cell(26,  $altodetalle, "I.V.A.", $bor, 0, 'C');
+$pdf->Cell(30,  $altodetalle, "I.V.A.", $bor, 0, 'C');
 $pdf->SetFont('Arial', '', 7);
-$pdf->Cell(3, $altodetalle, "$ ", 'BT', 0, 'C', false);
-$pdf->Cell(19,  $altodetalle, number_format($iva, 2, '.', ','), 'BTR', 1, 'R');
+$pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', false);
+$pdf->Cell(27,  $altodetalle, number_format($iva, 2, '.', ','), 'BTR', 1, 'R');
 
 $pdf->SetFont('Arial', 'B', 7);
-$pdf->SetX(244);
+$pdf->SetX(225);
 $pdf->SetFillColor(0);
 $pdf->SetTextColor(255);
-$pdf->Cell(26,  $altodetalle, "VALOR TOTAL", $bor, 0, 'C', true);
-$pdf->Cell(3, $altodetalle, "$ ", 'BT', 0, 'C', true);
+$pdf->Cell(30,  $altodetalle, "VALOR TOTAL", $bor, 0, 'C', true);
+$pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', true);
 
-$pdf->Cell(19,  $altodetalle, number_format($grantotal, 2, '.', ','), 'BTR', 1, 'R', true);
+$pdf->Cell(27,  $altodetalle, number_format($grantotal, 2, '.', ','), 'BTR', 1, 'R', true);
 $pdf->SetTextColor(0);
 $pdf->Ln(1);
 $bori = 0;
 $izq = 8;
 $letra = 8;
+$letrac = 5;
 $letras = new CifrasEnLetras();
 $pdf->SetFont('Arial', '', $letra);
 
@@ -301,8 +302,13 @@ if (strlen($msjLetras) > 80) {
 
 
 $pdf->Cell(155, 6, utf8_decode(strtoupper($msjLetras)) . " M.N.", $bori, 1, 'L');
+
+
 $alto = 4;
 $alto2 = 3;
+
+
+
 
 if ($observaciones != "") {
     $pdf->SetX($izq);
@@ -339,61 +345,100 @@ if ($uso != "") {
     $pdf->SetFont('Arial', '', $letra);
     $pdf->Cell(155, $alto, strtoupper(utf8_decode($uso)), $bori, 1, 'L');
 }
-if ($fechaEntrega != "") {
-    $pdf->SetX($izq);
-    $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("FECHA ENTREGA:"), $bori, 0, 'R');
-    $pdf->SetFont('Arial', '', $letra);
-    $pdf->Cell(155, $alto, strtoupper(utf8_decode($fechaEntrega)), $bori, 1, 'L');
-}
-if ($lugarentrega != "") {
-    $pdf->SetX($izq);
-    $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("LUG. DE ENTREGA:"), $bori, 0, 'R');
-    $pdf->SetFont('Arial', '', $letra);
-    $pdf->Cell(155, $alto, strtoupper(utf8_decode($lugarentrega)), $bori, 1, 'L');
-}
+
+
+$pdf->SetFont('Arial', 'B', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('NÚMEROS DE CUENTA PARA DEPÓSITO O TRANSFERENCIA'), 'TLR', 1, 'C');
+
+
 
 $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', $letra);
 $pdf->Cell(30, $alto, utf8_decode("NOTA:"), $bori, 0, 'R');
+
+
+
+
 $pdf->SetFont('Arial', '', $letra);
-$pdf->Cell(155, $alto, utf8_decode('Precios pueden cambiar sin previo aviso'), $bori, 1, 'L');
+$pdf->Cell(155, $alto, utf8_decode('Precios sujetos a cambio sin previo aviso'), $bori, 0, 'L');
+$pdf->SetFont('Arial', 'BU', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('BANAMEX'), 'LR', 1, 'C');
 
 
-$pdf->Cell(155, $alto2, strtoupper(utf8_decode('')), $bori, 1, 'L');
+$pdf->Cell(155, $alto2, strtoupper(utf8_decode('')), $bori, 0, 'L');
+
+$pdf->SetFont('Arial', '', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('CUENTA: 28982 SUCURSAL:45-56'), 'LR', 1, 'C');
 
 $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', $letra);
 $pdf->Cell(30, $alto, utf8_decode(""), $bori, 0, 'R');
 $pdf->SetFont('Arial', '', $letra);
-$pdf->Cell(155, $alto, utf8_decode('Sin más por el momento y confiando recibir una respuesta favorable, quedo atent@ a sus comentarios.'), $bori, 1, 'L');
+$pdf->Cell(155, $alto, utf8_decode('Atentamente,'), $bori, 0, 'L');
 
-$pdf->Cell(155, $alto2, strtoupper(utf8_decode('')), $bori, 1, 'L');
+$pdf->SetFont('Arial', '', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('CLABE: 002 680 455 600 289 825'), 'LR', 1, 'C');
+
+$pdf->Cell(155, $alto2, strtoupper(utf8_decode('')), $bori, 0, 'L');
+
+$pdf->SetFont('Arial', '', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('DEPOSITOS EN EFECTIVO: 881 109 104 006 6095'), 'LR', 1, 'C');
+
+
+
+
+
+
+
 $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', $letra);
 $pdf->Cell(30, $alto, utf8_decode(""), $bori, 0, 'R');
-$pdf->SetFont('Arial', '', $letra);
-$pdf->Cell(155, $alto, utf8_decode('Saludos cordiales,'), $bori, 1, 'L');
+$pdf->SetFont('Arial', 'B', $letra);
+$pdf->Cell(155, $alto, utf8_decode($usuario['nombre'] . " " . $usuario['apellidos']), $bori, 0, 'L');
 
-$pdf->Cell(155, $alto2, strtoupper(utf8_decode('')), $bori, 1, 'L');
-$pdf->SetX($izq);
-$pdf->SetFont('Arial', 'B', $letra);
-$pdf->Cell(30, $alto, utf8_decode(""), $bori, 0, 'R');
-$pdf->SetFont('Arial', 'B', $letra);
-$pdf->Cell(155, $alto, utf8_decode($usuario['nombre'] . " " . $usuario['apellidos']), $bori, 1, 'L');
+$pdf->SetFont('Arial', 'BU', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('BANORTE'), 'LR', 1, 'C');
+
+
+
 
 $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', $letra);
 $pdf->Cell(30, $alto, utf8_decode(""), $bori, 0, 'R');
 $pdf->SetFont('Arial', '', 7);
-$pdf->Cell(155, $alto, utf8_decode($usuario['correo'] . "    -     " . $usuario['telefono']), $bori, 1, 'L');
+$pdf->Cell(155, $alto, utf8_decode($usuario['correo'] . "    -     " . $usuario['telefono']), $bori, 0, 'L');
+
+
+$pdf->SetFont('Arial', '', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('CUENTA: 08 42 74 51 94'), 'LR', 1, 'C');
 
 
 
-$pdf->SetX($izq);
-$pdf->SetFont('Arial', 'B', 7);
+$pdf->SetFont('Arial', '', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('CLABE: 072 680 008 427 451 941'), 'LR', 1, 'C');
 
+
+
+$pdf->SetFont('Arial', 'BU', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('BANBAJIO'), 'LR', 1, 'C');
+
+$pdf->SetFont('Arial', '', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('CUENTA: 16042624-0201'), 'LR', 1, 'C');
+
+
+$pdf->SetFont('Arial', '', $letrac);
+$pdf->SetX(225);
+$pdf->Cell(60, $alto, utf8_decode('CLABE: 030 680 900 007 867 765'), 'LRB', 1, 'C');
 
 
 $pdf->Output();

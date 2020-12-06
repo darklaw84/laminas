@@ -26,6 +26,17 @@ class CotizacionController
     }
 
 
+    function obtenerAbonosCotizacion($idCotizacion)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CotizacionesModel($db);
+        $respuesta = $clase->obtenerAbonosCotizacion($idCotizacion);
+
+        return $respuesta;
+    }
+
+
     function obtenerRemisiones()
     {
         $database = new Database();
@@ -133,6 +144,11 @@ class CotizacionController
         $db = $database->getConnection();
         $clase = new CotizacionesModel($db);
         $respuesta = $clase->obtenerUltimasProducciones($cant);
+        $respuestad = $clase->obtenerUltimasDevolucionesProducciones($cant);
+
+        $juntos=array_merge($respuesta->registros,$respuestad->registros);
+
+        $respuesta->registros=$juntos;
 
         return $respuesta;
     }
@@ -146,6 +162,16 @@ class CotizacionController
         $db = $database->getConnection();
         $clase = new CotizacionesModel($db);
         $respuesta = $clase->actualizarCantidadCotDet($idCotizacionDet, $cantidad);
+
+        return $respuesta;
+    }
+
+    function actualizarPrecioCotDet($idCotizacionDet, $precio)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CotizacionesModel($db);
+        $respuesta = $clase->actualizarPrecioCotDet($idCotizacionDet, $precio);
 
         return $respuesta;
     }
@@ -182,6 +208,26 @@ class CotizacionController
         return $respuesta;
     }
 
+    function  cancelarPedido($idCotizacion)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CotizacionesModel($db);
+        $respuesta = $clase->cancelarPedido($idCotizacion);
+
+        return $respuesta;
+    }
+
+    function  cancelarRemision($idCotizacion)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CotizacionesModel($db);
+        $respuesta = $clase->cancelarRemision($idCotizacion);
+
+        return $respuesta;
+    }
+
     function generarMateriaProduccion(
         $idCotizacionDetM,
         $kilos,
@@ -210,6 +256,35 @@ class CotizacionController
     }
 
 
+    function generarMateriaDevolucion(
+        $idCotizacionDetM,
+        $kilos,
+        $cantidad,
+        $usuario,
+        $idUsuario,
+        $idProducto,
+        $idAlmacen,
+        $codigo,$utilizadosUsM
+    ) {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CotizacionesModel($db);
+        $respuesta = $clase->generarMateriaDevolucion(
+            $idCotizacionDetM,
+            $kilos,
+            $cantidad,
+            $usuario,
+            $idUsuario,
+            $idProducto,
+            $idAlmacen,
+            $codigo,$utilizadosUsM,$db
+        );
+
+        return $respuesta;
+    }
+
+
+
     function  eliminarCotizacion($idCotizacion)
     {
         $database = new Database();
@@ -233,6 +308,17 @@ class CotizacionController
     }
 
 
+    function  realizarAbono($idCotizacion, $montoAbono,$idUsuario,$idFormaPago)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CotizacionesModel($db);
+        $respuesta = $clase->realizarAbono($idCotizacion, $montoAbono,$idUsuario,$idFormaPago);
+
+        return $respuesta;
+    }
+
+
     function  actualizaSemaforo($idCotizacion, $color)
     {
         $database = new Database();
@@ -249,6 +335,17 @@ class CotizacionController
         $db = $database->getConnection();
         $clase = new CotizacionesModel($db);
         $respuesta = $clase->cancelarProduccion($idCotizacion);
+
+        return $respuesta;
+    }
+
+
+    function  cancelarAbono($idAbono,$idUsuario)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CotizacionesModel($db);
+        $respuesta = $clase->cancelarAbono($idAbono,$idUsuario);
 
         return $respuesta;
     }

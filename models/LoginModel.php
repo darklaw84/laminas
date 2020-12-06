@@ -71,9 +71,14 @@ class LoginModel
                     "verCotizaciones" => $verCotizaciones,
                     "cambiarPrecios" => $cambiarPrecios,
                     "traspasos" => $traspasos,
+                    "cancelarPedidos" => $cancelarPedidos,
+                    "agregarAbonos" => $agregarAbonos,
+                    "pedidoCantidades" => $pedidoCantidades,
+                    "cancelarRemisiones" => $cancelarRemisiones,
                     "eliminaCotizacion" => $eliminaCotizacion,
                     "correo" => $correo
 
+                    
 
                 );
 

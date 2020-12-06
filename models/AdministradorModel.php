@@ -70,13 +70,17 @@ class AdministradorModel
                     "autorizarPedidos" => $autorizarPedidos,
                     "inventarios" => $inventarios,
                     "verCotizaciones" => $verCotizaciones,
+                    "cancelarPedidos" => $cancelarPedidos,
+                    "agregarAbonos" => $agregarAbonos,
+                    "pedidoCantidades" => $pedidoCantidades,
+                    "cancelarRemisiones" => $cancelarRemisiones,
                     "traspasos" => $traspasos,
                     "activo" => $activo
 
                     
                 );
 
-           
+                
 
                 array_push($arreglo, $registro_item);
             }
@@ -332,7 +336,7 @@ class AdministradorModel
         $devoluciones,
         $eliminaOCompra,
         $salidaInventario,$editarProductos,$autorizarPedidos,
-        $genRem,$inventarios,$verCotizaciones,$traspasos
+        $genRem,$inventarios,$verCotizaciones,$cancelarPedidos,$agregarAbonos,$pedidoCantidades,$cancelarRemisiones,$traspasos
     ) {
 
         $respuesta = new RespuestaBD();
@@ -454,6 +458,30 @@ class AdministradorModel
             $traspasos = "0";
         }
 
+        if ($cancelarRemisiones) {
+            $cancelarRemisiones = "1";
+        } else {
+            $cancelarRemisiones = "0";
+        }
+
+        if ($pedidoCantidades) {
+            $pedidoCantidades = "1";
+        } else {
+            $pedidoCantidades = "0";
+        }
+
+        if ($agregarAbonos) {
+            $agregarAbonos = "1";
+        } else {
+            $agregarAbonos = "0";
+        }
+
+        if ($cancelarPedidos) {
+            $cancelarPedidos = "1";
+        } else {
+            $cancelarPedidos = "0";
+        }
+
 
 
        
@@ -473,9 +501,13 @@ class AdministradorModel
                 eliminaCotizacion=:eliminaCotizacion,devoluciones=:devoluciones,eliminaOCompra=:eliminaOCompra,
                 salidaInventario=:salidaInventario,cambiarPrecios=:cambiarPrecios,
                 editarProductos=:editarProductos,autorizarPedidos=:autorizarPedidos,
+                cancelarPedidos=:cancelarPedidos,agregarAbonos=:agregarAbonos,
+                pedidoCantidades=:pedidoCantidades,cancelarRemisiones=:cancelarRemisiones,
                 inventarios=:inventarios,verCotizaciones=:verCotizaciones,traspasos=:traspasos,
                 recMat=:recMat,usuarios=:usuarios,producciones=:producciones,genRem=:genRem,                tipo='A'";
 
+
+                
 
                 
 
@@ -515,6 +547,11 @@ class AdministradorModel
             $stmt->bindParam(":inventarios", $inventarios);
             $stmt->bindParam(":verCotizaciones", $verCotizaciones);
             $stmt->bindParam(":traspasos", $traspasos);
+            $stmt->bindParam(":cancelarRemisiones", $cancelarRemisiones);
+            $stmt->bindParam(":pedidoCantidades", $pedidoCantidades);
+            $stmt->bindParam(":agregarAbonos", $agregarAbonos);
+            $stmt->bindParam(":cancelarPedidos", $cancelarPedidos);
+            
             
             
 
@@ -553,7 +590,7 @@ class AdministradorModel
         $producciones,
         $usuarios,$eliminaCotizacion,
         $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,$editarProductos,$autorizarPedidos,
-        $genRem,$inventarios,$verCotizaciones,$traspasos
+        $genRem,$inventarios,$verCotizaciones,$cancelarPedidos,$agregarAbonos,$pedidoCantidades,$cancelarRemisiones,$traspasos
     ) {
 
         $respuesta = new RespuestaBD();
@@ -572,6 +609,8 @@ class AdministradorModel
                 clientes=:clientes,proveedores=:proveedores,productos=:productos,
                 eliminaCotizacion=:eliminaCotizacion,cambiarPrecios=:cambiarPrecios,devoluciones=:devoluciones,
                 eliminaOCompra=:eliminaOCompra,salidaInventario=:salidaInventario,
+                cancelarPedidos=:cancelarPedidos,agregarAbonos=:agregarAbonos,
+                pedidoCantidades=:pedidoCantidades,cancelarRemisiones=:cancelarRemisiones,
                 ordCompra=:ordCompra,producciones=:producciones,creaCot=:creaCot,calibres=:calibres,tipos=:tipos,
                 recMat=:recMat, inventarios=:inventarios, verCotizaciones=:verCotizaciones, traspasos=:traspasos,
                 editarProductos=:editarProductos,autorizarPedidos=:autorizarPedidos,usuarios=:usuarios,genRem=:genRem where idUsuario=:idUsuario";
@@ -617,6 +656,10 @@ class AdministradorModel
         $stmt->bindParam(":inventarios", $inventarios);
         $stmt->bindParam(":verCotizaciones", $verCotizaciones);
         $stmt->bindParam(":traspasos", $traspasos);
+        $stmt->bindParam(":cancelarRemisiones", $cancelarRemisiones);
+        $stmt->bindParam(":pedidoCantidades", $pedidoCantidades);
+        $stmt->bindParam(":agregarAbonos", $agregarAbonos);
+        $stmt->bindParam(":cancelarPedidos", $cancelarPedidos);
 
       
         

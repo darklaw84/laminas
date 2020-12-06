@@ -18,9 +18,13 @@ $(document).ready(function () {
         var inventarios = $('#' + id).children().find('.inventarios').val();
         var verCotizaciones = $('#' + id).children().find('.verCotizaciones').val();
         var traspasos = $('#' + id).children().find('.traspasos').val();
+        var cancelarPedidos = $('#' + id).children().find('.cancelarPedidos').val();
+        var agregarAbonos = $('#' + id).children().find('.agregarAbonos').val();
+        var pedidoCantidades = $('#' + id).children().find('.pedidoCantidades').val();
+        var cancelarRemisiones = $('#' + id).children().find('.cancelarRemisiones').val();
 
         
-
+        
 
         var productos = $('#' + id).children().find('.productos').val();
         var producciones = $('#' + id).children().find('.producciones').val();
@@ -177,6 +181,36 @@ $(document).ready(function () {
             $('#verCotizacionesM').prop("checked", false);
         }
 
+        if (cancelarRemisiones === "1") {
+            $('#cancelarRemisionesM').prop("checked", true);
+        }
+        else {
+            $('#cancelarRemisionesM').prop("checked", false);
+        }
+
+        if (pedidoCantidades === "1") {
+            $('#pedidoCantidadesM').prop("checked", true);
+        }
+        else {
+            $('#pedidoCantidadesM').prop("checked", false);
+        }
+
+        if (agregarAbonos === "1") {
+            $('#agregarAbonosM').prop("checked", true);
+        }
+        else {
+            $('#agregarAbonosM').prop("checked", false);
+        }
+
+        if (cancelarPedidos === "1") {
+            $('#cancelarPedidosM').prop("checked", true);
+        }
+        else {
+            $('#cancelarPedidosM').prop("checked", false);
+        }
+
+
+        
 
         if (inventarios === "1") {
             $('#inventariosM').prop("checked", true);
@@ -294,6 +328,30 @@ $(document).ready(function () {
             traspasos = 1;
         }
 
+        var cancelarRemisiones = 0;
+        if ($('#cancelarRemisionesM').prop("checked") == true) {
+            cancelarRemisiones = 1;
+        }
+
+        var pedidoCantidades = 0;
+        if ($('#pedidoCantidadesM').prop("checked") == true) {
+            pedidoCantidades = 1;
+        }
+
+        var agregarAbonos = 0;
+        if ($('#agregarAbonosM').prop("checked") == true) {
+            agregarAbonos = 1;
+        }
+
+        var cancelarPedidos = 0;
+        if ($('#cancelarPedidosM').prop("checked") == true) {
+            cancelarPedidos = 1;
+        }
+
+
+
+       
+
 
         
 
@@ -331,8 +389,14 @@ $(document).ready(function () {
                     eliminaCotizacion: eliminaCotizacion,
                     inventarios: inventarios,
                     verCotizaciones: verCotizaciones,
+                    cancelarPedidos: cancelarPedidos,
+                    agregarAbonos: agregarAbonos,
+                    pedidoCantidades: pedidoCantidades,
+                    cancelarRemisiones: cancelarRemisiones,
                     traspasos: traspasos,
                     tipo: 'update'
+
+                    
                     
 
                 },
@@ -361,8 +425,12 @@ $(document).ready(function () {
                     $('#' + idAdmin).children().find('.inventarios').val(inventarios);
                     $('#' + idAdmin).children().find('.verCotizaciones').val(verCotizaciones);
                     $('#' + idAdmin).children().find('.traspasos').val(traspasos);
+                    $('#' + idAdmin).children().find('.cancelarPedidos').val(cancelarPedidos);
+                    $('#' + idAdmin).children().find('.agregarAbonos').val(agregarAbonos);
+                    $('#' + idAdmin).children().find('.pedidoCantidades').val(pedidoCantidades);
+                    $('#' + idAdmin).children().find('.cancelarRemisiones').val(cancelarRemisiones);
 
-
+                    
                     
 
                     $('#' + idAdmin).children().find('.tipos').val(tipos);
@@ -388,16 +456,20 @@ $(document).ready(function () {
         var id = $(this).data('id');
         var cliente = $('#' + id).children('td[data-target=cliente]').text();
         var rfc = $('#' + id).children('td[data-target=rfc]').text();
-        var direccion = $('#' + id).children('td[data-target=direccion]').text();
+        
         var representante = $('#' + id).children('td[data-target=representante]').text();
         var telefono = $('#' + id).children('td[data-target=telefono]').text();
-        var mail = $('#' + id).children('td[data-target=mail]').text();
-        var direccionentrega = $('#' + id).children('td[data-target=direccionentrega]').text();
+        
+        
 
         var tipoprecio = $('#' + id).children('td[data-target=precio]').text();
 
         var comentarios = $('#' + id).children().find('.comentarios').val();
+        var direccion = $('#' + id).children().find('.direccion').val();
+        var direccionentrega = $('#' + id).children().find('.direccionentrega').val();
+        var mail = $('#' + id).children().find('.mail').val();
         var idUso = $('#' + id).children().find('.idUso').val();
+        var idVendedor = $('#' + id).children().find('.idVendedor').val();
 
         $('#clienteM').val(cliente);
         $('#rfcM').val(rfc);
@@ -409,6 +481,7 @@ $(document).ready(function () {
         $('#mailM').val(mail);
         $('#comentariosM').val(comentarios);
         $('#idUsoM').val(idUso);
+        $('#idVendedorM').val(idVendedor);
         $('#direccionentregaM').val(direccionentrega);
 
         if (tipoprecio === "General") {
@@ -441,6 +514,7 @@ $(document).ready(function () {
         var telefono = $('#telefonoM').val();
         var comentarios = $('#comentariosM').val();
         var idUso = $('#idUsoM').val();
+        var idVendedor = $('#idVendedorM').val();
         var mail = $('#mailM').val();
         var direccionentrega = $('#direccionentregaM').val();
         var usoText = $('#idUsoM option:selected').html();
@@ -467,6 +541,7 @@ $(document).ready(function () {
                     mail: mail,
                     rfc: rfc,
                     idUso: idUso,
+                    idVendedor: idVendedor,
                     tipoprecio: tipoprecio,
                     comentarios: comentarios,
                     direccion: direccion,
@@ -479,13 +554,18 @@ $(document).ready(function () {
                     $('#' + idCliente).children('td[data-target=cliente]').text(cliente);
                     $('#' + idCliente).children('td[data-target=rfc]').text(rfc);
                     $('#' + idCliente).children('td[data-target=representante]').text(representante);
-                    $('#' + idCliente).children('td[data-target=direccion]').text(direccion);
+                    
 
                     $('#' + idCliente).children('td[data-target=mail]').text(mail);
                     $('#' + idCliente).children('td[data-target=telefono]').text(telefono);
                     $('#' + idCliente).children('td[data-target=uso]').text(usoText);
-                    $('#' + idCliente).children('td[data-target=direccionentrega]').text(direccionentrega);
+                    
                     $('#' + idCliente).children().find('.comentarios').val(comentarios);
+                    $('#' + idCliente).children().find('.direccion').val(direccion);
+                    $('#' + idCliente).children().find('.idUso').val(idUso);
+                    $('#' + idCliente).children().find('.idVendedor').val(idVendedor);
+                    $('#' + idCliente).children().find('.direccionentrega').val(direccionentrega);
+                    $('#' + idCliente).children().find('.mail').val(mail);
                     var tipoPrecioS = "Revendedor";
                     if (tipoprecio === "G") {
                         tipoPrecioS = "General";
@@ -589,6 +669,7 @@ $(document).ready(function () {
 
         var idCalibre = $('#TR' + id).children().find('.idCalibre').val();
         var idAncho = $('#TR' + id).children().find('.idAncho').val();
+        var medidasreves = $('#TR' + id).children().find('.medidasreves').val();
         var idTipo = $('#TR' + id).children().find('.idTipo').val();
         var entrada = $('#TR' + id).children().find('.entrada').val();
         var salida = $('#TR' + id).children().find('.salida').val();
@@ -632,6 +713,11 @@ $(document).ready(function () {
             $('#chkSalidaM').prop("checked", true);
         }
 
+
+        if (medidasreves === "1") {
+            $('#medidasM').prop("checked", true);
+        }
+
         $('#precioRevM').val(precioRev);
         $('#precioGenM').val(precioGen);
 
@@ -671,6 +757,11 @@ $(document).ready(function () {
             salida = 1;
         }
 
+        
+        var medidasreves = 0;
+        if ($('#medidasM').prop("checked") == true) {
+            medidasreves = 1;
+        }
 
 
         var calibreText = $('#idCalibreM option:selected').html();
@@ -708,6 +799,7 @@ $(document).ready(function () {
                             idAncho: idAncho,
                             entrada: entrada,
                             salida: salida,
+                            medidasreves:medidasreves,
                             pesoTeorico: pesoTeorico,
                             producto: producto,
                             precioGen: precioGen,
@@ -731,6 +823,9 @@ $(document).ready(function () {
                             $('#TR' + idProducto).children('td[data-target=pesoTeorico]').text(pesoTeorico);
                             $('#TR' + idProducto).children().find('.idTipo').val(idTipo);
                             $('#TR' + idProducto).children().find('.idCalibre').val(idCalibre);
+                            $('#TR' + idProducto).children().find('.medidasreves').val(medidasreves);
+
+                            
                             $('#TR' + idProducto).children().find('.idAncho').val(idAncho);
                             $('#TR' + idProducto).children().find('.entrada').val(entrada);
                             $('#TR' + idProducto).children().find('.salida').val(salida);
@@ -889,6 +984,46 @@ $(document).ready(function () {
     });
 
 
+    $(document).on('click', 'a[data-role=updateChoferes]', function () {
+        var id = $(this).data('id');
+        var chofer = $('#' + id).children('td[data-target=chofer]').text();
+
+
+        $('#choferM').val(chofer);
+
+        $('#idChofer').val(id);
+
+        $('#modalChoferesUpdate').modal('toggle');
+    });
+
+
+    $(document).on('click', 'a[data-role=updateCamiones]', function () {
+        var id = $(this).data('id');
+        var camion = $('#' + id).children('td[data-target=camion]').text();
+        var placas = $('#' + id).children('td[data-target=placas]').text();
+
+
+        $('#camionM').val(camion);
+        $('#placasMCam').val(placas);
+
+        $('#idCamion').val(id);
+
+        $('#modalCamionesUpdate').modal('toggle');
+    });
+
+    $(document).on('click', 'a[data-role=updateAnchos]', function () {
+        var id = $(this).data('id');
+        var ancho = $('#' + id).children('td[data-target=ancho]').text();
+
+
+        $('#anchoM').val(ancho);
+
+        $('#idAncho').val(id);
+
+        $('#modalAnchosUpdate').modal('toggle');
+    });
+
+
     $('#guardarAncho').click(function () {
 
         var idAncho = $('#idAncho').val();
@@ -918,6 +1053,82 @@ $(document).ready(function () {
 
 
                     $('#modalAnchosUpdate').modal('toggle');
+                }
+            });
+        }
+
+    });
+
+
+    $('#guardarChofer').click(function () {
+
+        var idChofer = $('#idChofer').val();
+        var choferM = $('#choferM').val();
+
+
+
+
+        if (choferM === "") {
+            $('#modalMensajeError').find('.modal-body').text('Los campos son obligatorios').end().modal('show');
+        } else {
+
+
+
+
+            $.ajax({
+                url: 'chofercrud.php',
+                method: 'post',
+                data: {
+                    idChofer: idChofer,
+                    choferM: choferM
+                },
+                success: function (data) {
+
+                    $('#' + idChofer).children('td[data-target=chofer]').text(choferM);
+
+
+
+                    $('#modalChoferesUpdate').modal('toggle');
+                }
+            });
+        }
+
+    });
+
+
+
+    $('#guardarCamion').click(function () {
+
+        var idCamion = $('#idCamion').val();
+        var camionM = $('#camionM').val();
+        var placasM = $('#placasMCam').val();
+
+
+
+
+        if (camionM === "" || placasM==="") {
+            $('#modalMensajeError').find('.modal-body').text('Los campos son obligatorios').end().modal('show');
+        } else {
+
+
+
+
+            $.ajax({
+                url: 'camioncrud.php',
+                method: 'post',
+                data: {
+                    idCamion: idCamion,
+                    placasM: placasM,
+                    camionM: camionM
+                },
+                success: function (data) {
+
+                    $('#' + idCamion).children('td[data-target=camion]').text(camionM);
+                    $('#' + idCamion).children('td[data-target=placas]').text(placasM);
+
+
+
+                    $('#modalCamionesUpdate').modal('toggle');
                 }
             });
         }

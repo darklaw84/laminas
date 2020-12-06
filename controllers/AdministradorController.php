@@ -46,28 +46,33 @@ class AdministradorController
 
     function agregarAdministrador($nombre, $apellidos, $correo, $telefono, $password,
     $clientes,$proveedores,$productos, $ordCompra,$creaCot,$recMat,$calibres,$tipos,$producciones,$usuarios,$eliminaCotizacion,
-    $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,$editarProductos,$autorizarPedidos,$genRem,$inventarios,$verCotizaciones,$traspasos)
+    $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,$editarProductos,$autorizarPedidos
+    ,$genRem,$inventarios,$verCotizaciones,$cancelarPedidos,$agregarAbonos,$pedidoCantidades,
+    $cancelarRemisiones,$traspasos)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new AdministradorModel($db);
         $respuesta = $clase->agregarAdministrador($nombre, $apellidos, $correo, $telefono, $password,
         $clientes,$proveedores,$productos, $ordCompra,$creaCot,$recMat,$calibres,$tipos,$producciones,$usuarios,$eliminaCotizacion,
-        $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,$editarProductos,$autorizarPedidos,$genRem,$inventarios,$verCotizaciones,$traspasos);
+        $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,$editarProductos,$autorizarPedidos,$genRem,
+        $inventarios,$verCotizaciones,$cancelarPedidos,$agregarAbonos,$pedidoCantidades,$cancelarRemisiones,$traspasos);
 
         return $respuesta;
     }
 
     function actualizarAdministrador($nombre, $apellidos, $correo, $telefono, $idUsuario,
     $clientes,$proveedores,$productos, $ordCompra,$creaCot,$recMat,$calibres,$tipos,$producciones,$usuarios,$eliminaCotizacion,
-    $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,$editarProductos,$autorizarPedidos,$genRem,$inventarios,$verCotizaciones,$traspasos)
+    $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,$editarProductos,$autorizarPedidos,$genRem,$inventarios,
+    $verCotizaciones,$cancelarPedidos,$agregarAbonos,$pedidoCantidades,$cancelarRemisiones,$traspasos)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new AdministradorModel($db);
         $respuesta = $clase->actualizarAdministrador($nombre, $apellidos, $correo, $telefono, $idUsuario,
         $clientes,$proveedores,$productos, $ordCompra,$creaCot,$recMat,$calibres,$tipos,$producciones,$usuarios,$eliminaCotizacion,
-        $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,$editarProductos,$autorizarPedidos,$genRem,$inventarios,$verCotizaciones,$traspasos);
+        $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,$editarProductos,$autorizarPedidos,$genRem,
+        $inventarios,$verCotizaciones,$cancelarPedidos,$agregarAbonos,$pedidoCantidades,$cancelarRemisiones,$traspasos);
         return $respuesta;
     }
 

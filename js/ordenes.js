@@ -104,7 +104,7 @@ $(document).ready(function () {
         else if (idUnidadSel == 3) {
             $('#divPesoTeorico').hide();
 
-            $("#lblPrecio").text("Precio x Kilo");
+            $("#lblPrecio").text("Precio UM");
 
         }
         else if (idUnidadSel == 2) {
@@ -233,7 +233,7 @@ $(function () {
         else if (idUnidadSel == 3) {
             $('#divPesoTeorico').hide();
 
-            $("#lblPrecio").text("Precio x Kilo");
+            $("#lblPrecio").text("Precio UM");
 
         }
         else if (idUnidadSel == 2) {

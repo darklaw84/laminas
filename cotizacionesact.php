@@ -113,6 +113,11 @@ if (isset($_POST['idCotizacionDetCambiar'])) {
         $contCotizaciones->actualizarCantidadCotDet($idCotizacionDetCambiar, $cantidadCambiar);
     }
 
+    if (isset($_POST['preciopcambiar'])) {
+        $preciopcambiar = $_POST['preciopcambiar'];
+        $contCotizaciones->actualizarPrecioCotDet($idCotizacionDetCambiar, $preciopcambiar);
+    }
+
     if (isset($_POST['metrospcambiar'])) {
         $metrospcambiar = $_POST['metrospcambiar'];
         $contCotizaciones->actualizarMetrosCotDet($idCotizacionDetCambiar, $metrospcambiar);
@@ -134,8 +139,10 @@ if (isset($idCotizacion)) {
         $tipoPrecio = $cotizacion['tipoPrecio'];
         $descuento = $cotizacion['descuento'];
         $grantotal = $cotizacion['grantotal'];
+        $tieneRemision = $cotizacion['tieneRemision'];
         $costoEnvio = $cotizacion['costoEnvio'];
         $subtotal = $cotizacion['montototal'];
+        $idUsuario = $cotizacion['idUsuario'];
         $productosOrden = $cotizacion['productos'];
         if ($cotizacion['pedido'] == 1) {
             $pedido = true;
@@ -166,6 +173,7 @@ $productos = $respuesta->registros;
         <div class="main-card mb-3 card">
             <input type="hidden" id="idCotizacionMobil" value="<?php echo $idCotizacion; ?>" />
             <input type="hidden" id="idCotizacionModal" value="<?php echo $idCotizacion; ?>" />
+            <input type="hidden" id="idCotizacion" name="idCotizacion" value="<?php echo $idCotizacion; ?>" />
             <div class="card-body">
 
                 <div class="form-group">
@@ -199,7 +207,7 @@ $productos = $respuesta->registros;
                                     <label for="psc">Subtotal</label>
                                     <div>
                                         <input disabled="" size="5" class="form-control" value="<?php if (isset($subtotal)) {
-                                                                                                    echo "$ " . number_format($subtotal, 2, '.', ',');
+                                                                                                    echo "$ " . number_format($subtotal + ($costoEnvio / 1.16), 2, '.', ',');
                                                                                                 } ?>" />
 
                                     </div>
@@ -208,7 +216,7 @@ $productos = $respuesta->registros;
                                     <label for="psc">Total Cotización</label>
                                     <div>
                                         <input disabled="" size="5" class="form-control" value="<?php if (isset($grantotal)) {
-                                                                                                    echo "$ " . number_format($grantotal, 2, '.', ',');
+                                                                                                    echo "$ " . number_format($grantotal + $costoEnvio, 2, '.', ',');
                                                                                                 } ?>" />
 
                                     </div>
@@ -218,7 +226,7 @@ $productos = $respuesta->registros;
                             </div>
                             <form id="HeadersForm" enctype="multipart/form-data" method="post" action="index.php?p=cotizacionesact">
                                 <div class="form-row mt-1">
-                                 <!--   <div class="col-md-2">
+                                    <!--   <div class="col-md-2">
                                         <label for="descuento">Descuento</label>
                                         <div>
                                             <input type="number" class="form-control" id="descuentoCam" name="descuentoCam" value="<?php if (isset($descuento)) {
@@ -232,7 +240,7 @@ $productos = $respuesta->registros;
                                         <label for="cantKit">&nbsp;</label>
                                         <div>
 
-                                            <input type="hidden" id="idCotizacion" name="idCotizacion" value="<?php echo $idCotizacion; ?>" />
+                                           
                                             <input type="hidden" name="entro" value="1" />
                                             <button type="submit" class="btn btn-primary" name="signup" value="Sign up">Recalcular</button>
                                         </div>
@@ -242,8 +250,9 @@ $productos = $respuesta->registros;
                                     <div class="col-md-2">
                                         <label for="cantKit">&nbsp;</label>
                                         <div>
-
-                                            <button type="button" id="btnExtras" title="Actualizar Extras Cotización" class="btn btn-info" name="signup" value="Sign up">Extras</button>
+                                            <?php if (!$tieneRemision && ($idUsuario == $_SESSION['idUsr'] || $_SESSION['verCotizaciones'] == "1")) { ?>
+                                                <button type="button" id="btnExtras" title="Actualizar Extras Cotización" class="btn btn-info" name="signup" value="Sign up">Extras</button>
+                                            <?php } ?>
                                         </div>
                                     </div>
                                     <div class="col-md-1">
@@ -273,8 +282,8 @@ $productos = $respuesta->registros;
                                         <div>
                                             <input type="number" maxlength="10" step="0.01" class="form-control" id="costoEnvio" name="costoEnvio" value="<?php if (isset($costoEnvio)) {
 
-                                                                                                                                                        echo $costoEnvio;
-                                                                                                                                                    } ?>" />
+                                                                                                                                                                echo $costoEnvio;
+                                                                                                                                                            } ?>" />
 
                                         </div>
                                     </div>
@@ -393,6 +402,8 @@ $productos = $respuesta->registros;
                             <th>Metros</th>
                             <th>Precio Unitario</th>
                             <th>Monto</th>
+                            <th>Metros Lineales</th>
+                            <th>Peso Teórico</th>
                             <th>X</th>
 
 
@@ -411,21 +422,39 @@ $productos = $respuesta->registros;
                                 $largo = "";
                             }
 
+
+                            if ($reg['metros'] > 0) {
+
+                                $metrosLineales = $reg['metros'] * $reg['cantidad'];
+                            } else {
+                                if (is_numeric($reg['largo'])) {
+                                    $metrosLineales = $largo * $reg['cantidad'];
+                                } else {
+                                    $metrosLineales = 0;
+                                }
+                            }
+
                         ?>
                             <tr>
-                                <?php 
-                                    $totalPartida =  $reg['preciounitario'] * $reg['cantidad'];
-                                    ?>
+                                <?php
+                                $totalPartida =  $reg['preciounitario'] * $reg['cantidad'];
+                                ?>
                                 <td><?php echo $cont ?></td>
                                 <td><?php echo strtoupper($reg['sku'] . " " . $reg['producto'] . " " . $largo . " " . $reg['ancho'] . " " . $reg['calibre'] . " " . $reg['tipo']);   ?></td>
                                 <td><?php echo $reg['unidad'] ?></td>
-                                <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="KCA<?php echo $reg['idCotizacionDet'] ?>" class="mr-2 mb-2 btn btn-warning"><?php echo number_format($reg['cantidad'], 2, '.', ',') ?></button></td>
+                                <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="KCA<?php echo $reg['idCotizacionDet'] ?>" class="mr-2 mb-2 btn btn-dark"><?php echo number_format($reg['cantidad'], 2, '.', ',') ?></button></td>
                                 <td><?php echo "$ " . number_format($reg['precioUM'], 2, '.', ',') ?></td>
                                 <td><?php if ($reg['idUnidad'] == 2 && $mostrarbotonMetros) { ?><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="KCM<?php echo $reg['idCotizacionDet'] ?>" class="mr-2 mb-2 btn btn-warning"><?php echo number_format($reg['metros'], 2, '.', ',') ?></button><?php } else {
                                                                                                                                                                                                                                                                                                                                         echo number_format($reg['metros'], 2, '.', ',');
                                                                                                                                                                                                                                                                                                                                     } ?></td>
-                                <td><?php echo "$ " . number_format($reg['preciounitario'], 2, '.', ',') ?></td>
+                                <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="KCP<?php echo $reg['idCotizacionDet'] ?>" class="mr-2 mb-2 btn btn-danger"><?php echo number_format($reg['preciounitario'], 2, '.', ',') ?></button></td>
                                 <td><?php echo "$ " . number_format($totalPartida, 2, '.', ',') ?></td>
+                                <td><?php echo number_format($metrosLineales, 2, '.', ',') ?></td>
+                                <td><?php if ($reg['idUnidad'] == 3) {
+                                        echo number_format($reg['cantidad'], 2, '.', ',');
+                                    } else {
+                                        echo number_format($reg['pesoTeorico'] * $reg['cantidad'], 2, '.', ',');
+                                    } ?></td>
                                 <td><a href="index.php?p=cotizacionesact&entro=3&idCotizacion=<?php echo $idCotizacion; ?>&idCotizacionDet=<?php echo $reg['idCotizacionDet'] ?>" <?php if (isset($pedido) && $pedido == "1") {
                                                                                                                                                                                         echo "style='display:none;'";
                                                                                                                                                                                     } else { ?> class="btn btn-primary" <?php } ?>>X</a></td>
@@ -457,6 +486,40 @@ $productos = $respuesta->registros;
                                             <label for="porsobcos">Cantidad</label>
                                             <div>
                                                 <input type="number" size="18" step="0.01" class="form-control" id="cantidadpcambiar" name="cantidadpcambiar" value="<?php echo number_format($reg['cantidad'], 2, '.', '') ?>" />
+
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div>
+
+                                                <input type="hidden" name="idCotizacionDetCambiar" value=" <?php echo  $reg['idCotizacionDet'] ?>" />
+
+                                                <input type="hidden" name="idCotizacion" value="<?php echo $idCotizacion; ?>" />
+
+
+                                                <button type="submit" class="btn btn-danger" <?php if (isset($pedido) && $pedido == "1") {
+                                                                                                    echo "disabled ";
+                                                                                                    echo "title='Esta Cotización ya es un pedido, no la puedes editar desde esta pantalla'";
+                                                                                                } ?> name="signup" value="Sign up">Cambiar</button> </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div id="popover-content-KCP<?php echo  $reg['idCotizacionDet'] ?>" class="d-none">
+                    <div class="dropdown-menu-header">
+                        <div class="dropdown-menu-header-inner bg-primary">
+
+                            <div class="menu-header-content">
+                                <form action="index.php?p=cotizacionesact" method="POST">
+                                    <div class="form-row">
+                                        <div class="col-md-6">
+                                            <label for="porsobcos">Precio</label>
+                                            <div>
+                                                <input type="number" size="18" step="0.01" class="form-control" id="preciopcambiar" name="preciopcambiar" value="<?php echo number_format($reg['preciounitario'], 2, '.', '') ?>" />
 
                                             </div>
                                         </div>

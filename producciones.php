@@ -131,7 +131,7 @@ $producciones = $respuesta->registros;
                                     <tr id="<?php echo $det['idCotizacionDet'] ?>">
 
 
-                                        <td>PE<?php echo $reg['idCotizacion'] ?></td>
+                                        <td><?php echo $reg['idCotizacion'] ?></td>
                                         <td><input class="idProducto" type="hidden" value="<?php echo $det['idProducto'] ?>">
                                             <input class="unidad" type="hidden" value="<?php echo $det['unidad'] ?>">
                                             <input class="idUnidad" type="hidden" value="<?php echo $det['idUnidad'] ?>">
@@ -142,25 +142,25 @@ $producciones = $respuesta->registros;
 
                                         <td data-target="producto"><?php echo $det['sku'] . " " . $det['producto'] . " " . $det['calibre'] . " " . $det['tipo'] ?></td>
                                         <td><?php echo strtoupper($largoancho) ?></td>
-                                        <td><?php echo strtoupper($det['cantidad']) ?></td>
+                                        <td><?php echo number_format($det['cantidad'], 2, '.', ',') ?></td>
                                         <td><?php echo strtoupper($det['unidadFactura']) ?></td>
                                         <td><?php echo strtoupper($metrosLineales) ?></td>
                                         <td><?php if ($det['pesoTeorico'] != "") {
-                                                echo $det['pesoTeorico'] * $metrosLineales;
+                                                echo number_format($det['pesoTeorico'] * $metrosLineales, 2, '.', ',');
                                             } ?></td>
-                                        <td><?php echo strtoupper($det['cantidadProcesada']) ?></td>
+                                        <td><?php echo number_format($det['cantidadProcesada'], 2, '.', ',') ?></td>
                                         <td><?php echo $diaS . " " . $reg['fechaEntrega'] ?></td>
                                         <td><?php if ($reg['semaforo'] != "") {
 
                                                 if ($reg['semaforo'] == "V") { ?>
-                                                    <img src="./imagenes/verde.jpg" title="baja" height="20px">
+                                                    <img src="./imagenes/verde.jpg" title="Alta" height="20px">
                                                 <?php }
 
                                                 if ($reg['semaforo'] == "A") { ?>
-                                                    <img src="./imagenes/amarillo.jpg" title="media" height="20px">
+                                                    <img src="./imagenes/amarillo.jpg" title="Media" height="20px">
                                                 <?php }
                                                 if ($reg['semaforo'] == "R") { ?>
-                                                    <img src="./imagenes/rojo.jpg" title="alta" height="20px">
+                                                    <img src="./imagenes/rojo.jpg" title="Baja" height="20px">
                                                 <?php } ?>
 
 
@@ -183,7 +183,8 @@ $producciones = $respuesta->registros;
                 <table style="width: 100%;" id="ultimasproducciones" class="table table-hover table-striped table-bordered">
                     <thead>
                         <tr>
-                            <th># Prod.</th>
+                        <th># </th>
+                            <th>P / D</th>
                             <th># Ped</th>
                             <th>Cancelar</th>
                             <th>Producto</th>
@@ -213,20 +214,32 @@ $producciones = $respuesta->registros;
                         ?>
                             <tr id="<?php echo $reg['idProduccion'] ?>">
 
-
-                                <td>PR<?php echo $reg['idProduccion'] ?></td>
+                            <td><?php
+                                    echo $reg['idProduccion'] ?></td>
+                                <td><?php if ($reg['tipoProd'] == "D") {
+                                        echo "PD";
+                                    } else {
+                                        echo "PR";
+                                    }
+                                 ?></td>
                                 <td>PE<?php echo $reg['idCotizacion'] ?></td>
                                 <td>
-                                    <?php if ($reg['idUsuario'] == $_SESSION['idUsr'] && $reg['idRemisionDet']==null ) { ?>
-                                        <a href="#" class="btn btn-danger"  data-role="cancelarProduccion" data-id="<?php echo $reg['idProduccion'] ?>">Cancelar</a>
-                                    <?php } ?></td>
+                                    <?php if ($reg['idUsuario'] == $_SESSION['idUsr'] && $reg['idRemisionDet'] == null) {
+
+                                        if ($reg['tipoProd'] == "D") {
+                                    ?>
+                                            <a href="#" class="btn btn-danger" data-role="cancelarProduccion" data-id="D<?php echo $reg['idProduccion'] ?>">Cancelar</a>
+                                        <?php } else { ?>
+                                            <a href="#" class="btn btn-danger" data-role="cancelarProduccion" data-id="<?php echo $reg['idProduccion'] ?>">Cancelar</a>
+                                    <?php }
+                                    } ?></td>
 
                                 <td data-target="producto"><?php echo strtoupper($reg['sku'] . " " . $reg['producto']  . $reg['calibre'] . " " . $reg['tipo']); ?></td>
                                 <td><?php echo strtoupper($largoancho) ?></td>
-                                <td><?php echo strtoupper($reg['cantidad']) ?></td>
+                                <td><?php echo number_format($reg['cantidad'], 2, '.', ',') ?></td>
 
                                 <td><?php echo strtoupper($reg['unidadFactura']) ?></td>
-                                <td><?php echo strtoupper($reg['kilos']) ?></td>
+                                <td><?php echo number_format($reg['kilos'], 2, '.', ',') ?></td>
                                 <td><?php echo strtoupper($reg['usuario']) ?></td>
                                 <td><?php echo strtoupper($reg['fecha']) ?></td>
 
@@ -265,7 +278,7 @@ $producciones = $respuesta->registros;
     $(document).ready(function() {
         $('#ultimasproducciones').DataTable({
             "order": [
-                [0, "desc"]
+                [9, "desc"]
             ],
             "lengthMenu": [
                 [-1, 100, 200],

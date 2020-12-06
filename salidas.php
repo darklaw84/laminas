@@ -32,7 +32,7 @@ if (isset($_GET['idCotizacion'])) {
 
 //$salidas = $controller->obtenerSalidas(10)->registros;
 
-$cotizaciones = $controller->obtenerCotizaciones("PS",0)->registros;
+$cotizaciones = $controller->obtenerCotizaciones("PS", 0)->registros;
 
 if ($idCotizacion != "") {
     $cotizacion = $controller->obtenerCotizacion($idCotizacion)->registros[0];
@@ -75,17 +75,37 @@ if ($idCotizacion != "") {
                                 <?php
                                 if (isset($cotizaciones)) {
                                     foreach ($cotizaciones as $uni) {
-                                        $verselected = "";
-                                        if (isset($idCotizacion)) {
-                                            if ($idCotizacion == $uni['idCotizacion']) {
-                                                $verselected = "selected";
+                                        $tieneProduccionesSinRemision = false;
+                                        $tieneDevolucionesSinRemision=false;
+                                        foreach ($uni['productos'] as $produ) {
+                                            foreach ($produ['producciones'] as $producci) {
+                                                if (!$producci['tieneRemision']) {
+                                                    $tieneProduccionesSinRemision = true;
+                                                    break;
+                                                }
                                             }
-                                        } else {
-                                            $verselected = "";
+                                            foreach ($produ['devolucionesproducciones'] as $producci) {
+                                                if (!$producci['tieneRemision']) {
+                                                    $tieneDevolucionesSinRemision = true;
+                                                    break;
+                                                }
+                                            }
                                         }
-                                        echo '<option value="' . $uni['idCotizacion'] . '"' . $verselected
-                                            . '   >PE' .
-                                            strtoupper($uni['idCotizacion']) . ' - ' . strtoupper($uni['cliente']) . ' - ' . strtoupper($uni['montototal']) . '</option>';
+
+                                        if ($tieneProduccionesSinRemision || $tieneDevolucionesSinRemision) {
+
+                                            $verselected = "";
+                                            if (isset($idCotizacion)) {
+                                                if ($idCotizacion == $uni['idCotizacion']) {
+                                                    $verselected = "selected";
+                                                }
+                                            } else {
+                                                $verselected = "";
+                                            }
+                                            echo '<option value="' . $uni['idCotizacion'] . '"' . $verselected
+                                                . '   >PE' .
+                                                strtoupper($uni['idCotizacion']) . ' - ' . strtoupper($uni['cliente'])  . '</option>';
+                                        }
                                     }
                                 } ?>
                             </select>
@@ -111,14 +131,14 @@ if ($idCotizacion != "") {
                 <?php if (isset($productos) && count($productos) > 0) { ?>
                     <div class="row">
                         <div class="col-md-3">
-                        <button id="btnSelTodas" class="btn btn-dark mt-2 mb-2 ">Seleccionar Todas</button>
+                            <button id="btnSelTodas" class="btn btn-dark mt-2 mb-2 ">Seleccionar Todas</button>
                         </div>
                         <div class="col-md-6"></div>
                         <div class="col-md-3">
-                        <button id="btnGenerarRemision" style="font-size: 10px;" class="btn btn-warning mt-2 mb-2 ">Generar Remision y Dar Salida</button>
+                            <button id="btnGenerarRemision" style="font-size: 10px;" class="btn btn-warning mt-2 mb-2 ">Generar Remision y Dar Salida</button>
                         </div>
                     </div>
-                    
+
                     <table style="width: 100%;" id="detalleProd" class="table table-hover table-striped table-bordered ">
                         <thead>
                             <tr>
@@ -139,23 +159,48 @@ if ($idCotizacion != "") {
 
                             <?php
                             foreach ($productos as $prod) {
-                                foreach ($prod['producciones'] as $produ) { ?>
-                                    <tr id="<?php echo $produ['idProduccion'] ?>">
+                                foreach ($prod['producciones'] as $produ) {
 
-                                        <a>
-                                            <td><input type="checkbox" id="agregar"></td>
-                                            <td>PR<?php echo $produ['idProduccion'] ?></td>
-                                            <td><?php echo $prod['producto'] . " " . $prod['tipo'] ?></td>
-                                            <td><?php echo $prod['calibre'] ?></td>
-                                            <td><?php echo $prod['unidad'] ?></td>
-                                            <td><?php echo $produ['cantidad'] ?></td>
-                                            <td><?php echo $produ['kilos'] ?></td>
-                                            <td><?php echo $prod['metros'] ?></td>
-                                            <td><?php echo strtoupper($produ['almacen']); ?></td>
+                                    if (!$produ['tieneRemision']) {
+
+                            ?>
+                                        <tr id="<?php echo $produ['idProduccion'] ?>">
+
+                                            <a>
+                                                <td><input type="checkbox" id="agregar"></td>
+                                                <td>PR<?php echo $produ['idProduccion'] ?></td>
+                                                <td><?php echo $prod['producto'] . " " . $prod['tipo'] ?></td>
+                                                <td><?php echo $prod['calibre'] ?></td>
+                                                <td><?php echo $prod['unidad'] ?></td>
+                                                <td><?php echo number_format($produ['cantidad'], 2, '.', ',') ?></td>
+                                                <td><?php echo number_format($produ['kilos'], 2, '.', ',') ?></td>
+                                                <td><?php echo number_format($prod['metros'], 2, '.', ',') ?></td>
+                                                <td><?php echo strtoupper($produ['almacen']); ?></td>
 
 
-                                    </tr>
+                                        </tr>
+                                    <?php }
+                                }
+                                foreach ($prod['devolucionesproducciones'] as $produ) {
+
+                                    if (!$produ['tieneRemision']) { ?>
+                                        <tr id="D<?php echo $produ['idDevolucionProduccion'] ?>">
+
+                                            <a>
+                                                <td><input type="checkbox" id="agregar"></td>
+                                                <td>PD<?php echo $produ['idDevolucionProduccion'] ?></td>
+                                                <td><?php echo $prod['producto'] . " " . $prod['tipo'] ?></td>
+                                                <td><?php echo $prod['calibre'] ?></td>
+                                                <td><?php echo $prod['unidad'] ?></td>
+                                                <td><?php echo number_format($produ['cantidad'], 2, '.', ',') ?></td>
+                                                <td><?php echo number_format($produ['kilos'], 2, '.', ',') ?></td>
+                                                <td><?php echo number_format($prod['metros'], 2, '.', ',') ?></td>
+                                                <td><?php echo strtoupper($produ['almacen']); ?></td>
+
+
+                                        </tr>
                             <?php }
+                                }
                             }
                             ?>
 

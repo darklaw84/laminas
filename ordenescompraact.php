@@ -225,9 +225,9 @@ foreach ($productosOrden as $prod) {
                                     <div class="col-md-2">
                                         <label for="descuento">&nbsp;</label>
                                         <div>
-                                            <?php if ($estatus!="F"){ ?>
-                                            <button type="button" id="btnFinalizarOrden" class="btn btn-success" name="signup" value="Sign up">Finalizar Orden Compra</button>
-                                            <?php }?>
+                                            <?php if ($estatus != "F") { ?>
+                                                <button type="button" id="btnFinalizarOrden" class="btn btn-success" name="signup" value="Sign up">Finalizar Orden Compra</button>
+                                            <?php } ?>
                                         </div>
                                     </div>
                                     <div class="col-md-1">
@@ -319,7 +319,7 @@ foreach ($productosOrden as $prod) {
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <label id="lblPrecio" for="precioUni">Precio X Kilo</label>
+                                                <label id="lblPrecio" for="precioUni">Precio UM</label>
                                                 <div>
                                                     <input type="number" size="5" placeholder="$" step="0.01" class="form-control" id="precioUni" name="precioUni" value="<?php if (isset($precioUni)) {
                                                                                                                                                                                 echo $precioUni;
@@ -334,7 +334,7 @@ foreach ($productosOrden as $prod) {
 
                                             <input type="hidden" name="idOrden" value="<?php echo $idOrden; ?>" />
                                             <input type="hidden" name="entro" value="2" />
-                                            <button type="submit" class="btn btn-primary" <?php if ($estatus=="F") {
+                                            <button type="submit" class="btn btn-primary" <?php if ($estatus == "F") {
                                                                                                 echo "disabled";
                                                                                             ?> title="No puedes agregar productos porque la orden ya fue finalizada" <?php } ?> name="signup" value="Sign up">Agregar</button> </div>
                                     </div>
@@ -351,35 +351,48 @@ foreach ($productosOrden as $prod) {
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Producto</th>
                             <th>Cantidad</th>
-                            <th>Unidad</th>
+                            <th>UM</th>
+                            <th>Descripción</th>
+
+
                             <th>Peso Teórico Kgs.</th>
-                            <th>Precio x Unidad</th>
-                            <th>Total</th>
+                            <th>Precio Unitario</th>
+                            <th>Importe</th>
                             <th>X</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php $cont = 1;
-                        foreach ($productosOrden as $reg) { 
-                            
+                        foreach ($productosOrden as $reg) {
+
                             if (is_numeric($reg['largo'])) {
                                 $largo = $reg['largo'];
-                                
                             } else {
                                 $largo = "";
                             }
-                            ?>
-                        
+                        ?>
+
                             <tr id="<?php echo $reg['idOrdenCompraDet'] ?>">
                                 <td><?php echo $cont; ?></td>
-                                <td><?php echo strtoupper($reg['sku'] . " " . $reg['producto'] . " " . $largo . " " . $reg['ancho'] . " " . $reg['calibre'] . " " . $reg['tipo']) ?></td>
                                 <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="K<?php echo $reg['idOrdenCompraDet'] ?>" class="mr-2 mb-2 btn btn-warning"><?php echo number_format($reg['cantidad'], 2, '.', ',') ?></button></td>
                                 <td><?php echo $reg['unidad'] ?></td>
+                                <td><?php echo strtoupper($reg['sku'] . " " . $reg['producto'] . " " . $largo . " " . $reg['ancho'] . " " . $reg['calibre'] . " " . $reg['tipo']) ?></td>
 
-                                <td><?php if ($reg['pesoTeorico'] != "") {
-                                        echo number_format($reg['pesoTeorico'], 2, '.', ',');
+
+
+                                <td><?php if ($reg['pesoTeorico'] > 0) {
+                                        if ($reg['idUnidad'] == 3) {
+                                            echo number_format($reg['cantidad'], 2, '.', ',');
+                                        } else {
+                                            echo number_format($reg['cantidad'] * $reg['pesoTeorico'], 2, '.', ',');
+                                        }
+                                    } else if ($reg['prodPesoTeorico'] > 0) {
+                                        if ($reg['idUnidad'] == 3) {
+                                            echo number_format($reg['cantidad'], 2, '.', ',');
+                                        } else {
+                                            echo number_format($reg['cantidad'] * $reg['prodPesoTeorico'], 2, '.', ',');
+                                        }
                                     } ?></td>
                                 <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="P<?php echo $reg['idOrdenCompraDet'] ?>" class="mr-2 mb-2 btn btn-warning"><?php echo number_format($reg['precioUnidadPeso'], 2, '.', ',') ?></button></td>
                                 <td><?php echo "$ " . number_format($reg['precio'], 2, '.', ','); ?></td>

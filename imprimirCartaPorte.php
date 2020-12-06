@@ -88,7 +88,7 @@ class PDF extends FPDF
     function Header()
     {
         // Logo
-        $this->Image('./imagenes/logo.jpg', 10, 6, 40, 22);
+        $this->Image('./imagenes/logo.jpg', 10, 6, 30, 20);
         // Arial bold 15
         $this->SetFont('Arial', 'B', 15);
         // Move to the right
@@ -190,9 +190,9 @@ class PDF extends FPDF
         // Page number
         //  $this->Cell(0, 10, utf8_decode('Página ') . $this->PageNo() . '/{nb}', 0, 0, 'C');
 
-        $this->Cell(0, 4, utf8_decode('Central de láminas Querétaro '), 0, 1, 'C');
+        $this->Cell(0, 4, utf8_decode('Central de Láminas Querétaro '), 0, 1, 'C');
         $this->SetFont('Arial', '', 7);
-        $this->Cell(0, 4, utf8_decode('Carretera México - Querétaro Km 199 + 500, El Carmen, El Marquéz, Querétaro. CP 76240 '), 0, 1, 'C');
+        $this->Cell(0, 4, utf8_decode('Carretera México - Querétaro Km 199 + 500, El Carmen, El Marqués, Querétaro. CP 76240 '), 0, 1, 'C');
         $this->Cell(0, 4, utf8_decode('Tel. 442 221 5971 | 442 221 5972 '), 0, 1, 'C');
         $this->Cell(0, 4, utf8_decode('www.centraldelamina.com'), 0, 1, 'C');
     }
@@ -253,18 +253,21 @@ foreach ($detalleRemision as $reg) {
     $pdf->Cell(10, 6, $contador, $bor, 0, 'C', true);
     $pdf->Cell(16, 6, $reg['cantidad'], $bor, 0, 'C', true);
     $pdf->Cell(18, 6, $reg['unidadFactura'], $bor, 0, 'C', true);
-    $pdf->Cell(161, 6, strtoupper($reg['producto'] . " " . $reg['calibre'] . " " . $reg['tipo']), $bor, 0, 'C', true);
+
+    $descripcion = strtoupper($reg['producto'] . " " . $reg['calibre'] . " " . $reg['tipo']);
+    $descripcion = str_replace("N/A", "", $descripcion);
+    $pdf->Cell(161, 6, utf8_decode(strtoupper($descripcion)), $bor, 0, 'C', true);
 
 
-
+    $largoancho = str_replace('&quot;', '"', $largoancho);
     $pdf->Cell(27, 6, strtoupper($largoancho), $bor, 0, 'C', true);
 
-    if ($conPeso=="1") {
-        $pdf->Cell(30, 6, $metrosLineales, $bor, 0, 'C', true);
+    if ($conPeso == "1") {
+        $pdf->Cell(30, 6, number_format($metrosLineales, 2, '.', ','), $bor, 0, 'C', true);
 
-        $pdf->Cell(25, 6, $reg['kilos'], $bor, 1, 'C', true);
+        $pdf->Cell(25, 6, number_format($reg['kilos'], 2, '.', ','), $bor, 1, 'C', true);
     } else {
-        $pdf->Cell(55, 6, $metrosLineales, $bor, 1, 'C', true);
+        $pdf->Cell(55, 6, number_format($metrosLineales, 2, '.', ','), $bor, 1, 'C', true);
     }
     $totalMetros = $totalMetros + $metrosLineales;
     $kilosTotales = $kilosTotales + $reg['kilos'];
@@ -286,12 +289,11 @@ for ($i = $contador; $i <= 10; $i++) {
 
 
     $pdf->Cell(27, 6, '', $bor, 0, 'C', true);
-    if ($conPeso=="1") {
-    $pdf->Cell(30, 6, '', $bor, 0, 'C', true);
+    if ($conPeso == "1") {
+        $pdf->Cell(30, 6, '', $bor, 0, 'C', true);
 
-    $pdf->Cell(25, 6, '', $bor, 1, 'C', true);
-    }
-    else{
+        $pdf->Cell(25, 6, '', $bor, 1, 'C', true);
+    } else {
         $pdf->Cell(55, 6, '', $bor, 1, 'C', true);
     }
 }
@@ -308,7 +310,7 @@ $pdf->Cell(161, 6, '', $bor, 0, 'C', true);
 $pdf->Cell(27, 6, '', $bor, 0, 'C', true);
 $pdf->SetFont('Arial', 'B', 10);
 
-if ($conPeso=="1") {
+if ($conPeso == "1") {
 
     $pdf->Cell(30, 6, number_format($totalMetros, 2, '.', ''), $bor, 0, 'C', true);
 

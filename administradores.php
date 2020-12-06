@@ -56,10 +56,14 @@ if ($entro != "") {
             isset($_POST['genRem']),
             isset($_POST['inventarios']),
             isset($_POST['verCotizaciones']),
+            isset($_POST['cancelarPedidos']),
+            isset($_POST['agregarAbonos']),
+            isset($_POST['pedidoCantidades']),
+            isset($_POST['cancelarRemisiones']),
             isset($_POST['traspasos'])
         );
 
-     
+
 
         if (!$respuesta->exito) {
             $mensajeEnviar = $respuesta->mensaje;
@@ -166,7 +170,7 @@ $registros = $respuesta->registros;
 
                         <div class="form-group">
                             <div class="form-row">
-                            <div class="col-4 col-md-2">
+                                <div class="col-4 col-md-2">
                                     <label for="correo">Usuarios</label>
                                     <div>
                                         <input type="checkbox" name="usuarios" id="usuarios">
@@ -294,6 +298,30 @@ $registros = $respuesta->registros;
                                         <input type="checkbox" name="verCotizaciones" id="verCotizaciones">
                                     </div>
                                 </div>
+                                <div class="col-4 col-md-2">
+                                    <label for="correo">Actualizar Cantidades Pedido</label>
+                                    <div>
+                                        <input type="checkbox" name="pedidoCantidades" id="pedidoCantidades">
+                                    </div>
+                                </div>
+                                <div class="col-4 col-md-2">
+                                    <label for="correo">Cancelar Remisiones</label>
+                                    <div>
+                                        <input type="checkbox" name="cancelarRemisiones" id="cancelarRemisiones">
+                                    </div>
+                                </div>
+                                <div class="col-4 col-md-2">
+                                    <label for="correo">Realizar Abonos</label>
+                                    <div>
+                                        <input type="checkbox" name="agregarAbonos" id="agregarAbonos">
+                                    </div>
+                                </div>
+                                <div class="col-4 col-md-2">
+                                    <label for="correo">Cancelar Pedidos</label>
+                                    <div>
+                                        <input title="aún sin este permiso, cada usuario puede cancelar sus propios pedidos" type="checkbox" name="cancelarPedidos" id="cancelarPedidos">
+                                    </div>
+                                </div>
 
                             </div>
                         </div>
@@ -325,7 +353,8 @@ $registros = $respuesta->registros;
                     <tbody>
                         <?php foreach ($registros as $reg) { ?>
                             <tr id="<?php echo $reg['idUsuario'] ?>">
-                                <td data-target="nombre"><?php echo strtoupper($reg['nombre']) ?><td data-target="apellidos"><?php echo strtoupper($reg['apellidos']) ?></td>
+                                <td data-target="nombre"><?php echo strtoupper($reg['nombre']) ?>
+                                <td data-target="apellidos"><?php echo strtoupper($reg['apellidos']) ?></td>
                                 <td data-target="correo"><?php echo strtoupper($reg['correo']) ?></td>
                                 <td data-target="telefono"><?php echo strtoupper($reg['telefono']) ?></td>
                                 <td><a href="#" class="btn btn-primary" data-role="updateAdministradores" data-id="<?php echo $reg['idUsuario'] ?>">Actualizar</a></td>
@@ -338,32 +367,38 @@ $registros = $respuesta->registros;
                                                                                                                                                                 } else {
                                                                                                                                                                     echo "Activar";
                                                                                                                                                                 } ?></a>
-                                                                                                                                                                
-                                <input class="clientes" type="hidden" value="<?php echo $reg['clientes'] ?>">
-                                <input class="productos" type="hidden" value="<?php echo $reg['productos'] ?>">
-                                <input class="calibres" type="hidden" value="<?php echo $reg['calibres'] ?>">
-                                <input class="tipos" type="hidden" value="<?php echo $reg['tipos'] ?>">
-                                <input class="proveedores" type="hidden" value="<?php echo $reg['proveedores'] ?>">
-                                <input class="producciones" type="hidden" value="<?php echo $reg['producciones'] ?>">
-                                <input class="usuarios" type="hidden" value="<?php echo $reg['usuarios'] ?>">
-                                <input class="autorizarPedidos" type="hidden" value="<?php echo $reg['autorizarPedidos'] ?>">
-                                <input class="editarProductos" type="hidden" value="<?php echo $reg['editarProductos'] ?>">
-                                <input class="ordCompra" type="hidden" value="<?php echo $reg['ordCompra'] ?>">
-                                <input class="creaCot" type="hidden" value="<?php echo $reg['creaCot'] ?>">
-                                <input class="recMat" type="hidden" value="<?php echo $reg['recMat'] ?>">
-                                <input class="calibres" type="hidden" value="<?php echo $reg['calibres'] ?>">
-                                <input class="tipos" type="hidden" value="<?php echo $reg['tipos'] ?>">
-                                <input class="eliminaCotizacion" type="hidden" value="<?php echo $reg['eliminaCotizacion'] ?>">
-                                <input class="cambiarPrecios" type="hidden" value="<?php echo $reg['cambiarPrecios'] ?>">
-                                <input class="devoluciones" type="hidden" value="<?php echo $reg['devoluciones'] ?>">
-                                <input class="eliminaOCompra" type="hidden" value="<?php echo $reg['eliminaOCompra'] ?>">
-                                <input class="salidaInventario" type="hidden" value="<?php echo $reg['salidaInventario'] ?>">
-                                <input class="traspasos" type="hidden" value="<?php echo $reg['traspasos'] ?>">
-                                <input class="verCotizaciones" type="hidden" value="<?php echo $reg['verCotizaciones'] ?>">
-                                <input class="inventarios" type="hidden" value="<?php echo $reg['inventarios'] ?>">
-                                <input class="genRem" type="hidden" value="<?php echo $reg['genRem'] ?>"></td>
+
+
+
+                                    <input class="cancelarPedidos" type="hidden" value="<?php echo $reg['cancelarPedidos'] ?>">
+                                    <input class="agregarAbonos" type="hidden" value="<?php echo $reg['agregarAbonos'] ?>">
+                                    <input class="pedidoCantidades" type="hidden" value="<?php echo $reg['pedidoCantidades'] ?>">
+                                    <input class="cancelarRemisiones" type="hidden" value="<?php echo $reg['cancelarRemisiones'] ?>">
+                                    <input class="clientes" type="hidden" value="<?php echo $reg['clientes'] ?>">
+                                    <input class="productos" type="hidden" value="<?php echo $reg['productos'] ?>">
+                                    <input class="calibres" type="hidden" value="<?php echo $reg['calibres'] ?>">
+                                    <input class="tipos" type="hidden" value="<?php echo $reg['tipos'] ?>">
+                                    <input class="proveedores" type="hidden" value="<?php echo $reg['proveedores'] ?>">
+                                    <input class="producciones" type="hidden" value="<?php echo $reg['producciones'] ?>">
+                                    <input class="usuarios" type="hidden" value="<?php echo $reg['usuarios'] ?>">
+                                    <input class="autorizarPedidos" type="hidden" value="<?php echo $reg['autorizarPedidos'] ?>">
+                                    <input class="editarProductos" type="hidden" value="<?php echo $reg['editarProductos'] ?>">
+                                    <input class="ordCompra" type="hidden" value="<?php echo $reg['ordCompra'] ?>">
+                                    <input class="creaCot" type="hidden" value="<?php echo $reg['creaCot'] ?>">
+                                    <input class="recMat" type="hidden" value="<?php echo $reg['recMat'] ?>">
+                                    <input class="calibres" type="hidden" value="<?php echo $reg['calibres'] ?>">
+                                    <input class="tipos" type="hidden" value="<?php echo $reg['tipos'] ?>">
+                                    <input class="eliminaCotizacion" type="hidden" value="<?php echo $reg['eliminaCotizacion'] ?>">
+                                    <input class="cambiarPrecios" type="hidden" value="<?php echo $reg['cambiarPrecios'] ?>">
+                                    <input class="devoluciones" type="hidden" value="<?php echo $reg['devoluciones'] ?>">
+                                    <input class="eliminaOCompra" type="hidden" value="<?php echo $reg['eliminaOCompra'] ?>">
+                                    <input class="salidaInventario" type="hidden" value="<?php echo $reg['salidaInventario'] ?>">
+                                    <input class="traspasos" type="hidden" value="<?php echo $reg['traspasos'] ?>">
+                                    <input class="verCotizaciones" type="hidden" value="<?php echo $reg['verCotizaciones'] ?>">
+                                    <input class="inventarios" type="hidden" value="<?php echo $reg['inventarios'] ?>">
+                                    <input class="genRem" type="hidden" value="<?php echo $reg['genRem'] ?>"></td>
                                 </td>
-                                
+
                             </tr>
                         <?php } ?>
 
@@ -380,10 +415,12 @@ $registros = $respuesta->registros;
     <?php include_once('footer.php') ?>
 </div>
 <script>
-$(document).ready(function() {
-    $('#administradores').DataTable( {
-        "lengthMenu": [[100, 200,-1], [100,200, "Todos"]]
-    } );
-} );
-
+    $(document).ready(function() {
+        $('#administradores').DataTable({
+            "lengthMenu": [
+                [100, 200, -1],
+                [100, 200, "Todos"]
+            ]
+        });
+    });
 </script>

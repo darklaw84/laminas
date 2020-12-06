@@ -1,10 +1,13 @@
 <?php
 
 include_once './controllers/CatalogosController.php';
+include_once './controllers/DevolucionesController.php';
 if (!isset($_SESSION['nombreUsr'])) {
     echo "<script>window.setTimeout(function() { window.location = 'login.php' }, 10);</script>";
 }
 $controller = new CatalogosController();
+$devcontroller = new DevolucionesController();
+
 
 
 if (isset($_POST['idProd'])) {
@@ -28,6 +31,9 @@ $recepciones = $respuesta->registros;
 $respuesta = $controller->obtenerProductosEntrada();
 $productos = $respuesta->registros;
 
+
+$respuesta = $devcontroller->obtenerDevoluciones();
+$devoluciones = $respuesta->registros;
 
 
 ?>
@@ -83,7 +89,7 @@ $productos = $respuesta->registros;
                             </select>
                         </div>
                     </div>
-                   
+
 
 
 
@@ -128,15 +134,23 @@ $productos = $respuesta->registros;
                                         <td><?php echo $ins['id'] ?></td>
                                         <td><?php echo $ins['idMov'] ?></td>
                                         <td><?php if ($ins['tipo'] == "S") {
-                                                echo $ins['cantidad'] * -1;
+                                                echo number_format($ins['cantidad'] * -1, 2, '.', ',');
                                             } else {
-                                                echo $ins['cantidad'];
+                                                echo number_format($ins['cantidad'], 2, '.', ',');
                                             } ?></td>
                                         <td><?php echo $ins['unidad'] ?></td>
-                                        <td><?php if ($ins['tipo'] == "S") {
-                                                echo $ins['peso'] * -1;
+                                        <td><?php if ($ins['idUnidad'] == "1") {
+                                                if ($ins['tipo'] == "S") {
+                                                    echo  number_format($ins['cantidad'] * -1, 2, '.', ',');
+                                                } else {
+                                                    echo  number_format($ins['cantidad'], 2, '.', ',');
+                                                }
                                             } else {
-                                                echo $ins['peso'];
+                                                if ($ins['tipo'] == "S") {
+                                                    echo  number_format($ins['peso'] * -1, 2, '.', ',');
+                                                } else {
+                                                    echo  number_format($ins['peso'], 2, '.', ',');
+                                                }
                                             } ?></td>
                                         <td><?php if ($ins['tipo'] == "S") { ?>
                                                 <img src="./imagenes/out.png" style="height: 30px"> <?php } else { ?>
@@ -173,48 +187,49 @@ $productos = $respuesta->registros;
                 <table style="width: 100%;" id="recepcionesT" class="table table-hover table-striped table-bordered ">
                     <thead>
                         <tr>
-                        
+
                             <th>#</th>
-                            
                             <th>Producto</th>
-                            
-                            <th>Kilos Totales</th>
-                            <th>Kilos Usados</th>
-                            <th>Kilos Restan</th>
+                            <th>UM</th>
+                            <th>Cant Total</th>
+
+
+
+
+                            <th>Usados</th>
+                            <th>Disponibles</th>
                             <th>Almacen</th>
-                            <?php if($_SESSION['traspasos']=="1"){ ?>
-<th>Traspaso</th>
+                            <?php if ($_SESSION['traspasos'] == "1") { ?>
+                                <th>Traspaso</th>
                             <?php } ?>
-                            
+
 
                         </tr>
                     </thead>
                     <tbody>
 
                         <?php if (isset($recepciones) && count($recepciones) > 0) {
-                            foreach ($recepciones as $det) { 
-                                if(is_numeric($det['largo']))
-                            {
-                                $largo=$det['largo'];
-                                $mostrarbotonMetros=false;
-                            }
-                            else
-                            {
-                                $largo="";
-                            }?>
+                            foreach ($recepciones as $det) {
+                                if (is_numeric($det['largo'])) {
+                                    $largo = $det['largo'];
+                                    $mostrarbotonMetros = false;
+                                } else {
+                                    $largo = "";
+                                } ?>
                                 <tr>
 
                                     <a>
                                         <td><?php echo $det['id'] ?></td>
                                         <td><?php echo $det['sku'] . " " . $det['producto'] . " " . $largo . " " . $det['ancho'] . " " . $det['calibre'] . " " . $det['tipo'] ?></td>
-                                        <td><?php echo $det['peso'] ?></td>
-                                        <td><?php echo $det['kilosUsados'] ?></td>
-                                        <td><?php echo $det['restante'] ?></td>
+                                        <td><?php echo $det['unidad'] ?></td>
+                                        <td><?php echo  number_format($det['peso'], 2, '.', ','); ?></td>
+                                        <td><?php echo  number_format($det['kilosUsados'], 2, '.', ','); ?></td>
+                                        <td><?php echo  number_format($det['restante'], 2, '.', ','); ?></td>
                                         <td><?php echo $det['almacen'] ?></td>
-                                        <?php if($_SESSION['traspasos']=="1"){ ?>
+                                        <?php if ($_SESSION['traspasos'] == "1") { ?>
 
 
-                                        <td><a href="#" class="btn btn-primary" data-role="hacerTraspaso" data-id="<?php echo $det['idRecepcion'] ?>">Traspaso</a></td>
+                                            <td><a href="#" class="btn btn-primary" data-role="hacerTraspaso" data-id="<?php echo $det['idRecepcion'] ?>">Traspaso</a></td>
                                         <?php } ?>
                                 </tr>
                         <?php }
@@ -222,7 +237,76 @@ $productos = $respuesta->registros;
 
 
                     </tbody>
-                   
+
+
+                </table>
+            </div>
+            <!-- hasta aqui llega-->
+        </div>
+
+
+        <div class="main-card mb-3 card">
+            <div class="card-body">
+                <h2>Devoluciones Vigentes</h2>
+                <table style="width: 100%;" id="recepcionesT" class="table table-hover table-striped table-bordered ">
+                    <thead>
+                        <tr>
+
+                            <th>#</th>
+                            <th>Producto</th>
+                            <th>UM</th>
+                            <th>Cant Total</th>
+
+
+
+
+                            <th>Usados</th>
+                            <th>Disponibles</th>
+                            <th>Almacen</th>
+                            <?php if ($_SESSION['traspasos'] == "1") { ?>
+                                <th>Traspaso</th>
+                            <?php } ?>
+
+
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <?php if (isset($devoluciones) && count($devoluciones) > 0) {
+                            foreach ($devoluciones as $det) {
+
+                                if ($det['restante'] > 0) {
+                                    if (is_numeric($det['largo'])) {
+                                        $largo = $det['largo'];
+                                    } else {
+                                        $largo = "";
+                                    }
+
+
+                        ?>
+                                    <tr>
+
+                                        <a>
+                                            <td>D<?php echo $det['idDevolucion'] ?></td>
+                                            <td><?php echo $det['sku'] . " " . $det['producto'] . " " . $largo . " " . $det['ancho'] . " " . $det['calibre'] . " " . $det['tipo'] ?></td>
+                                            <td><?php echo $det['unidad'] ?></td>
+                                            <td><?php echo  number_format($det['cantidad'], 2, '.', ','); ?></td>
+                                            <td><?php echo  number_format($det['usados'], 2, '.', ','); ?></td>
+                                            <td><?php echo  number_format($det['restante'], 2, '.', ','); ?></td>
+                                            <td><?php echo $det['almacen'] ?></td>
+                                            <?php if ($_SESSION['traspasos'] == "1") { ?>
+
+
+                                                <td><a href="#" class="btn btn-primary" data-role="hacerTraspaso" data-id="D<?php echo $det['idDevolucion'] ?>">Traspaso</a></td>
+                                            <?php } ?>
+                                    </tr>
+                        <?php }
+                            }
+                        } ?>
+
+
+                    </tbody>
+
 
                 </table>
             </div>
@@ -235,9 +319,9 @@ $productos = $respuesta->registros;
 <script>
     $(document).ready(function() {
         $('#recepcionesT').DataTable({
-            scrollY:        '35vh',
-        scrollCollapse: true,
-        paging:         false,
+            scrollY: '35vh',
+            scrollCollapse: true,
+            paging: false,
             "lengthMenu": [
                 [-1, 100, 200],
                 ["Todos", 100, 200]

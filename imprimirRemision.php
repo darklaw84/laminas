@@ -314,7 +314,7 @@ if ($condiciones != "") {
 if ($vigencia != "") {
     $pdf->SetX($izq);
     $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("VIGENCIA DE PRECIOS:"), $bori, 0, 'R');
+    $pdf->Cell(30, $alto, utf8_decode("VIG. DE PRECIOS:"), $bori, 0, 'R');
     $pdf->SetFont('Arial', '', $letra);
     $pdf->Cell(155, $alto, strtoupper(utf8_decode($vigencia)), $bori, 1, 'L');
 }
@@ -342,7 +342,7 @@ if ($fechaEntrega != "") {
 if ($lugarentrega != "") {
     $pdf->SetX($izq);
     $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("LUGAR DE ENTREGA:"), $bori, 0, 'R');
+    $pdf->Cell(30, $alto, utf8_decode("LUG. DE ENTREGA:"), $bori, 0, 'R');
     $pdf->SetFont('Arial', '', $letra);
     $pdf->Cell(155, $alto, strtoupper(utf8_decode($lugarentrega)), $bori, 1, 'L');
 }

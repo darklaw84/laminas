@@ -89,7 +89,7 @@ class CatalogosController
     function agregarProducto($producto,$idCalibre,$idTipo,
     $idUnidad,$pesoTeorico,$precioGen,$precioRev,$sku,$idAncho,$largo,$idUnidadFactura,
     $chkSalida,
-    $chkEntrada)
+    $chkEntrada,$medidas)
     {
         $database = new Database();
         $db = $database->getConnection();
@@ -97,19 +97,19 @@ class CatalogosController
         $respuesta = $clase->agregarProducto($producto,$idCalibre,$idTipo
         ,$idUnidad,$pesoTeorico,$precioGen,$precioRev,$sku,$idAncho,$largo,$idUnidadFactura,
         $chkSalida,
-        $chkEntrada);
+        $chkEntrada,$medidas);
         return $respuesta;
     }
 
 
     function actualizarProducto($producto, $idProducto,$idCalibre,$idTipo,
-    $idUnidad,$pesoTeorico,$precioGen,$precioRev,$idAncho,$largo,$idUnidadFactura,$entrada,$salida)
+    $idUnidad,$pesoTeorico,$precioGen,$precioRev,$idAncho,$largo,$idUnidadFactura,$entrada,$salida,$medidasreves)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
         $respuesta = $clase->actualizarProducto($producto, $idProducto,
-        $idCalibre,$idTipo,$idUnidad,$pesoTeorico,$precioGen,$precioRev,$idAncho,$largo,$idUnidadFactura,$entrada,$salida);
+        $idCalibre,$idTipo,$idUnidad,$pesoTeorico,$precioGen,$precioRev,$idAncho,$largo,$idUnidadFactura,$entrada,$salida,$medidasreves);
         return $respuesta;
     }
 
@@ -133,7 +133,7 @@ class CatalogosController
     $tipoprecio,
     $comentarios,
     $idUso,
-    $direccionentrega)
+    $direccionentrega,$idVendedor)
     {
         $database = new Database();
         $db = $database->getConnection();
@@ -143,17 +143,17 @@ class CatalogosController
         $tipoprecio,
         $comentarios,
         $idUso,
-        $direccionentrega);
+        $direccionentrega,$idVendedor);
         return $respuesta;
     }
 
 
-    function agregarCliente($cliente, $rfc,$direccion,$representante,$telefono,$mail,$tipoprecio,$comentarios,$idUso,$direccionentrega)
+    function agregarCliente($cliente, $rfc,$direccion,$representante,$telefono,$mail,$tipoprecio,$comentarios,$idUso,$direccionentrega,$idVendedor)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
-        $respuesta = $clase->agregarCliente($cliente, $rfc,$direccion,$representante,$telefono,$mail,$tipoprecio,$comentarios,$idUso,$direccionentrega);
+        $respuesta = $clase->agregarCliente($cliente, $rfc,$direccion,$representante,$telefono,$mail,$tipoprecio,$comentarios,$idUso,$direccionentrega,$idVendedor);
         return $respuesta;
     }
 
@@ -173,6 +173,26 @@ class CatalogosController
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
         $respuesta = $clase->actualizarAncho($tipo, $idTipo);
+        return $respuesta;
+    }
+
+
+    function actualizarChofer($chofer, $idChofer)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->actualizarChofer($chofer, $idChofer);
+        return $respuesta;
+    }
+
+
+    function actualizarCamion($camion,$placas, $idCamion)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->actualizarCamion($camion,$placas, $idCamion);
         return $respuesta;
     }
 
@@ -205,6 +225,27 @@ class CatalogosController
         $respuesta = $clase->agregarTipo($tipo);
         return $respuesta;
     }
+
+
+    function agregarChofer($chofer)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->agregarChofer($chofer);
+        return $respuesta;
+    }
+
+
+    function agregarCamion($camion,$placas)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->agregarCamion($camion,$placas);
+        return $respuesta;
+    }
+
 
 
     function agregarLargo($tipo)
@@ -250,6 +291,26 @@ class CatalogosController
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
         $respuesta = $clase->obtenerTipos();
+        return $respuesta;
+    }
+
+
+    function obtenerCamiones()
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->obtenerCamiones();
+        return $respuesta;
+    }
+
+
+    function obtenerChoferes()
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->obtenerChoferes();
         return $respuesta;
     }
 
@@ -353,6 +414,26 @@ class CatalogosController
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
         $respuesta = $clase->toggleTipo($idTipo, $activo);
+        return $respuesta;
+    }
+
+
+    function toggleCamion($idCamion, $activo)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->toggleCamion($idCamion, $activo);
+        return $respuesta;
+    }
+
+
+    function toggleChofer($idChofer, $activo)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->toggleChofer($idChofer, $activo);
         return $respuesta;
     }
 

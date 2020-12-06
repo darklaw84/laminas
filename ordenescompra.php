@@ -57,15 +57,16 @@ $clientes = $respClientes->registros;
     <div class="app-main__inner">
         <div class="app-page-title">
             <div class="page-title-wrapper">
-            <div class="col-md-4"><div class="page-title-heading">
-                    <div class="page-title-icon">
-                        <i class="pe-7s-wallet icon-gradient bg-ripe-malin"></i>
-                    </div>
-                    <div>Órdenes de Compra
-                       
+                <div class="col-md-4">
+                    <div class="page-title-heading">
+                        <div class="page-title-icon">
+                            <i class="pe-7s-wallet icon-gradient bg-ripe-malin"></i>
+                        </div>
+                        <div>Órdenes de Compra
+
+                        </div>
                     </div>
                 </div>
-            </div>
 
 
                 <form class="form-row col-md-12" action="index.php?p=ordenescompra" method="POST">
@@ -128,7 +129,7 @@ $clientes = $respClientes->registros;
                     </thead>
                     <tbody>
                         <?php foreach ($registros as $reg) { ?>
-                            <tr id="<?php echo $reg['idOrden']?>">
+                            <tr id="<?php echo $reg['idOrden'] ?>">
 
 
                                 <td>O<?php echo $reg['idOrden'] ?></td>
@@ -167,35 +168,47 @@ $clientes = $respClientes->registros;
                 <table style="width: 100%;" id="example" class="table table-hover table-striped table-bordered ">
                     <thead>
                         <tr>
-                      
-                            <th>Producto</th>
+                            <th>Cantidad</th>
                             <th>Unidad</th>
+                            <th>Producto</th>
+
                             <th>Peso Teórico</th>
-                            <th>$ x U. de P.</th>
-                            <th>Monto</th>
+                            <th>Precio Unitario</th>
+                            <th>Importe</th>
                             <th>Recibido</th>
-                           
+
 
                         </tr>
                     </thead>
                     <tbody>
 
-                        <?php foreach ($reg['productos'] as $ins) { 
+                        <?php foreach ($reg['productos'] as $ins) {
                             if (is_numeric($ins['largo'])) {
                                 $largo = $ins['largo'];
-                                
                             } else {
                                 $largo = "";
                             }
-                            ?>
+                        ?>
                             <tr>
-
-                           
-                                <td><?php echo strtoupper($ins['sku'] . " " . $ins['producto'] . " " . $largo . " " . $ins['ancho'] . " " . $ins['calibre'] . " " . $ins['tipo']) ?></td>
+                                <td><?php echo $ins['cantidad'] ?></td>
                                 <td><?php echo $ins['unidad'] ?></td>
-                                <td><?php echo $ins['pesoTeorico'] ?></td>
-                                <td><?php echo "$ " . number_format($ins['precioUnidadPeso'], 2, '.', '') ?></td>
-                                <td><?php echo "$ " . number_format($ins['pesoTeorico'] * $ins['precioUnidadPeso'], 2, '.', '') ?></td>
+                                <td><?php echo strtoupper($ins['sku'] . " " . $ins['producto'] . " " . $largo . " " . $ins['ancho'] . " " . $ins['calibre'] . " " . $ins['tipo']) ?></td>
+
+                                <td><?php if ($ins['pesoTeorico'] > 0) {
+                                        if ($ins['idUnidad'] == 3) {
+                                            echo number_format($ins['cantidad'], 2, '.', ',');
+                                        } else {
+                                            echo number_format($ins['cantidad'] * $ins['pesoTeorico'], 2, '.', ',');
+                                        }
+                                    } else if ($ins['prodPesoTeorico'] > 0) {
+                                        if ($ins['idUnidad'] == 3) {
+                                            echo number_format($ins['cantidad'], 2, '.', ',');
+                                        } else {
+                                            echo number_format($ins['cantidad'] * $ins['prodPesoTeorico'], 2, '.', ',');
+                                        }
+                                    } ?></td>
+                                <td><?php echo number_format($ins['precioUnidadPeso'], 2, '.', ',') ?></td>
+                                <td><?php echo "$ " . number_format($ins['precio'], 2, '.', ','); ?></td>
                                 <td><?php if ($ins['recibido'] == "1") { ?><img src="./imagenes/correcto.png" style="height: 20px"><?php } else { ?><img src="./imagenes/incorrecto.png" style="height: 20px"><?php } ?></td>
 
 
@@ -216,11 +229,15 @@ $clientes = $respClientes->registros;
     <?php include_once('footer.php') ?>
 </div>
 <script>
-$(document).ready(function() {
-    $('#ordenes').DataTable( {
-        "order": [[ 0, "desc" ]],
-        "lengthMenu": [[100, 200,-1], [100,200, "Todos"]]
-    } );
-} );
-
+    $(document).ready(function() {
+        $('#ordenes').DataTable({
+            "order": [
+                [0, "desc"]
+            ],
+            "lengthMenu": [
+                [100, 200, -1],
+                [100, 200, "Todos"]
+            ]
+        });
+    });
 </script>

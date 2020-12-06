@@ -1,10 +1,12 @@
 <?php
 
 include_once './controllers/CatalogosController.php';
+include_once './controllers/AdministradorController.php';
 if (!isset($_SESSION['nombreUsr'])) {
     echo "<script>window.setTimeout(function() { window.location = 'login.php' }, 10);</script>";
 }
 $controller = new CatalogosController();
+$admcontroller = new AdministradorController();
 
 $entro = "";
 if (isset($_POST['entro'])) {
@@ -25,6 +27,7 @@ if ($entro != "") {
     $direccionentrega = $_POST['direccionentrega'];
     $mail = $_POST['mail'];
     $idUso = $_POST['idUso'];
+    $idVendedor = $_POST['idVendedor'];
     $telefono = $_POST['telefono'];
 
 
@@ -50,7 +53,7 @@ if ($entro != "") {
             $tipoprecio,
             $comentarios,
             $idUso,
-            $direccionentrega
+            $direccionentrega,$idVendedor
         );
 
         if (!$respuesta->exito) {
@@ -77,6 +80,10 @@ if ($entro != "") {
 }
 $respuesta = $controller->obtenerclientes();
 $registros = $respuesta->registros;
+
+
+$respuesta = $admcontroller->obtenerAdministradores();
+$usuarios = $respuesta->registros;
 
 
 $respuesta = $controller->obtenerUsos();
@@ -220,6 +227,20 @@ $usos = $respuesta->registros;
                                         </select>
                                      </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <label for="clave">Vendedor</label>
+                                    <div>
+                                    <select class=" form-control " id="idVendedor" name="idVendedor">
+                                            <?php
+                                            if (isset($usuarios)) {
+                                                foreach ($usuarios as $uni) {
+                                                    echo '<option value="' . $uni['idUsuario'] . '" >' .
+                                                        strtoupper($uni['nombre']." ".$uni['apellidos']) . '</option>';
+                                                }
+                                            } ?>
+                                        </select>
+                                     </div>
+                                </div>
                                 
 
                                
@@ -248,8 +269,8 @@ $usos = $respuesta->registros;
                            
                             <th>Contacto</th>
                             <th>Teléfono</th>
-                            <th>Mail</th>
-                            <th>CFDI</th>
+                            
+                            
                            
                             <th>Precio</th>
 
@@ -268,8 +289,7 @@ $usos = $respuesta->registros;
                                
                                 <td data-target="representante"><?php echo strtoupper($reg['representante']) ?></td>
                                 <td data-target="telefono"><?php echo strtoupper($reg['telefono']) ?></td>
-                                <td data-target="mail"><?php echo strtoupper($reg['mail']) ?></td>
-                                <td data-target="uso"><?php echo strtoupper($reg['uso']) ?></td>
+                            
                                 
                                 <td data-target="precio"><?php if ($reg['tipoprecio'] == "G") {
                                                                 echo "General";
@@ -282,6 +302,11 @@ $usos = $respuesta->registros;
                                 <td><a href="#" class="btn btn-primary" data-role="updateClientes" data-id="<?php echo $reg['idCliente'] ?>">Actualizar</a></td>
                                 <td>
                                 <input class="idUso" type="hidden" value="<?php echo $reg['idUso'] ?>">
+                                <input class="idVendedor" type="hidden" value="<?php echo $reg['idVendedor'] ?>">
+                                <input class="mail" type="hidden" value="<?php echo $reg['mail'] ?>">
+                                <input class="direccion" type="hidden" value="<?php echo $reg['direccion'] ?>">
+                                <input class="direccionentrega" type="hidden" value="<?php echo $reg['direccionentrega'] ?>">
+                                
                                 <input class="comentarios" type="hidden" value="<?php echo $reg['comentarios'] ?>">
                                     <a href="index.php?p=clientes&idCliente=<?php echo $reg['idCliente'] ?>&activo=<?php if ($reg['activo'] == 1) {
                                                                                                                         echo "0";

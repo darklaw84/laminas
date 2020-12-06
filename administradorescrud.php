@@ -38,6 +38,14 @@ if ($idAdmin != "" && $tipo=="update") {
     $verCotizaciones = $_POST['verCotizaciones'] ;
     $traspasos = $_POST['traspasos'] ;
 
+    $cancelarPedidos = $_POST['cancelarPedidos'] ;
+    $agregarAbonos = $_POST['agregarAbonos'] ;
+    $pedidoCantidades = $_POST['pedidoCantidades'] ;
+    $cancelarRemisiones = $_POST['cancelarRemisiones'] ;
+
+
+    
+
     
 
 
@@ -46,7 +54,8 @@ if ($idAdmin != "" && $tipo=="update") {
     $respuesta = $controller->actualizarAdministrador($nombreAdmin, $apellidosAdmin,$correoAdmin,$telefonoAdmin, $idAdmin,
     $clientes,$proveedores,$productos, $ordCompra,$creaCot,$recMat,$calibres,$tipos,$producciones,$usuarios,$eliminaCotizacion,
     $cambiarPrecios,$devoluciones,$eliminaOCompra,$salidaInventario,
-    $editarProductos,$autorizarPedidos,$genRem   ,$inventarios,$verCotizaciones,$traspasos);
+    $editarProductos,$autorizarPedidos,$genRem   ,$inventarios,$verCotizaciones,$cancelarPedidos,
+    $agregarAbonos,$pedidoCantidades,$cancelarRemisiones,$traspasos);
     if ($respuesta->exito) {
       echo "aqui puedes mandar un json, pero aqui no lo ocupamos";
     }

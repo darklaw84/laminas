@@ -20,6 +20,7 @@ if ($idCliente != "" && $tipo == "update") {
   $telefono = $_POST['telefono'];
   $mail = $_POST['mail'];
   $idUso = $_POST['idUso'];
+  $idVendedor = $_POST['idVendedor'];
 
   $representante = $_POST['representante'];
   $respuesta = $controller->actualizarCliente($cliente, $idCliente,
@@ -29,7 +30,7 @@ if ($idCliente != "" && $tipo == "update") {
   $tipoprecio,
   $comentarios,
   $idUso,
-  $direccionentrega);
+  $direccionentrega,$idVendedor);
   if ($respuesta->exito) {
     echo "aqui puedes mandar un json, pero aqui no lo ocupamos";
   } else {

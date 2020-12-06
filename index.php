@@ -44,7 +44,7 @@ $tc = $resTC->valor;
 
 
     <script src="./js/administradores.js"></script>
-    <script src="./js/cotizaciones_1.js"></script>
+    <script src="./js/cotizaciones.js"></script>
     <script src="./js/ordenes.js"></script>
     <script src="./js/producciones.js"></script>
     <script src="./js/recibirMateria.js"></script>
@@ -288,6 +288,25 @@ $tc = $resTC->valor;
                                                 </a>
                                             </li>
                                         <?php } ?>
+
+                                        <?php if ($_SESSION['usuarios'] == "1") { ?>
+                                            <li>
+                                                <a href="index.php?p=camiones">
+                                                    <i class="pe-7s-car metismenu-icon">
+                                                    </i>Unidades
+                                                </a>
+                                            </li>
+                                        <?php } ?>
+
+
+                                        <?php if ($_SESSION['usuarios'] == "1") { ?>
+                                            <li>
+                                                <a href="index.php?p=choferes">
+                                                    <i class="pe-7s-smile metismenu-icon">
+                                                    </i>Choferes
+                                                </a>
+                                            </li>
+                                        <?php } ?>
                                     </ul>
 
                                 </li>
@@ -376,6 +395,15 @@ $tc = $resTC->valor;
                                     </a>
                                 </li>
                             <?php } ?>
+                            <?php if ($_SESSION['devoluciones'] == "1") { ?>
+
+                                <li>
+                                    <a href="index.php?p=devoluciones">
+                                        <i class="pe-7s-loop metismenu-icon">
+                                        </i>Devoluciones
+                                    </a>
+                                </li>
+                            <?php } ?>
 
 
 
@@ -449,6 +477,12 @@ $tc = $resTC->valor;
                     include_once("anchos.php");
                 } else if ($p == 'remisiones') {
                     include_once("remisiones.php");
+                } else if ($p == 'devoluciones') {
+                    include_once("devoluciones.php");
+                } else if ($p == 'choferes') {
+                    include_once("choferes.php");
+                } else if ($p == 'camiones') {
+                    include_once("camiones.php");
                 }
             }
 
@@ -641,6 +675,30 @@ $tc = $resTC->valor;
                                         <input type="checkbox" name="verCotizaciones" id="verCotizacionesM">
                                     </div>
                                 </div>
+                                <div class="col-4 col-md-2">
+                                    <label for="correo">Actualizar Cantidades Pedido</label>
+                                    <div>
+                                        <input type="checkbox" name="pedidoCantidades" id="pedidoCantidadesM">
+                                    </div>
+                                </div>
+                                <div class="col-4 col-md-2">
+                                    <label for="correo">Cancelar Remisiones</label>
+                                    <div>
+                                        <input type="checkbox" name="cancelarRemisiones" id="cancelarRemisionesM">
+                                    </div>
+                                </div>
+                                <div class="col-4 col-md-2">
+                                    <label for="correo">Realizar Abonos</label>
+                                    <div>
+                                        <input type="checkbox" name="agregarAbonos" id="agregarAbonosM">
+                                    </div>
+                                </div>
+                                <div class="col-4 col-md-2">
+                                    <label for="correo">Cancelar Pedidos</label>
+                                    <div>
+                                        <input title="aún sin este permiso, cada usuario puede cancelar sus propios pedidos" type="checkbox" name="cancelarPedidos" id="cancelarPedidosM">
+                                    </div>
+                                </div>
 
 
 
@@ -671,6 +729,17 @@ $tc = $resTC->valor;
 
     $respuesta = $catCon->obtenerUsos();
     $usos = $respuesta->registros;
+
+    $respuesta = $catCon->obtenerCamiones();
+    $camiones = $respuesta->registros;
+
+    $respuesta = $catCon->obtenerChoferes();
+    $choferes = $respuesta->registros;
+
+
+    $respuesta = $contAd->obtenerAdministradores();
+    $vendedores = $respuesta->registros;
+    
 
 
     ?>
@@ -726,12 +795,12 @@ $tc = $resTC->valor;
                                 </div>
                             </div>
                             <div class="form-row">
-                                <div class="col-md-6">
+                                <!-- <div class="col-md-6">
                                     <label for="vigenciaM">Lugar de Entrega </label>
                                     <div>
                                         <input type="text" maxlength="100" class="form-control" id="lugarM" name="lugarM" />
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="col-md-6">
                                     <label for="vigenciaM">Fecha de Entrega </label>
                                     <div>
@@ -766,7 +835,7 @@ $tc = $resTC->valor;
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Datos Carta Porte</h5>
+                    <h5 class="modal-title" id="lblTituloCP">Datos Operador</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -776,23 +845,37 @@ $tc = $resTC->valor;
                     <div class="card-body">
                         <div class="form-group">
                             <div class="form-row">
-                                <div class="col-md-6">
+                                <div class="col-md-5">
                                     <label for="tipoUnidadM">Tipo Unidad</label>
                                     <div>
                                         <input type="text" maxlength="50" class="form-control" id="tipoUnidadM" name="tipoUnidadM" />
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="placasM">Placas </label>
+                                <div class="col-md-5">
+                                    <label for="formaM">Placas </label>
                                     <div>
-                                        <input type="text" maxlength="50" class="form-control" id="placasM" name="placasM" />
-                                    </div>
+                                        <select class=" form-control " name="idCamionCP" id="idCamionCP">
+                                            <?php
+                                            if (isset($camiones)) {
+                                                foreach ($camiones as $uni) {
+                                                    echo '<option value="' . $uni['idCamion'] . '" >' .
+                                                        strtoupper($uni['camion'] . " " . $uni['placas']) . '</option>';
+                                                }
+                                            } ?>
+                                        </select> </div>
                                 </div>
                                 <div class="col-md-5">
-                                    <label for="operadorM">Operador </label>
+                                    <label for="formaM">Operador </label>
                                     <div>
-                                        <input type="text" maxlength="50" class="form-control" id="operadorM" name="operadorM" />
-                                    </div>
+                                        <select class=" form-control " name="idChoferCP" id="idChoferCP">
+                                            <?php
+                                            if (isset($formas)) {
+                                                foreach ($choferes as $uni) {
+                                                    echo '<option value="' . $uni['idChofer'] . '" >' .
+                                                        strtoupper($uni['chofer']) . '</option>';
+                                                }
+                                            } ?>
+                                        </select> </div>
                                 </div>
                                 <div class="col-md-5">
                                     <label for="contenedorM">No. Contenedor </label>
@@ -825,6 +908,124 @@ $tc = $resTC->valor;
 
 
 
+    <div id="modalCancelarPedido" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="lblTituloCP">Cancelar Pedido</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="card-body">
+                        <div class="form-group">
+                        <label > ¿Esta seguro que desea cancelar el pedido?</label>
+
+                        </div>
+
+
+                        <input type="hidden" id="idPedidoCancelar" />
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="cancelarPedido" class="btn btn-primary pull-right">Cancelar Pedido</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="modalCancelarRemision" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="lblTituloCP">Cancelar Remisión</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="card-body">
+                        <div class="form-group">
+                        <label > ¿Esta seguro que desea cancelar la remisión?</label>
+
+                        </div>
+
+
+                        <input type="hidden" id="idRemisionCancelar" />
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="cancelarRemision" class="btn btn-primary pull-right">Cancelar Remisión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="modalAbono" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Realizar Abono</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col-md-6">
+                                    <label for="tipoUnidadM">Monto</label>
+                                    <div>
+                                        <input type="number" maxlength="10" class="form-control" id="montoAbono" name="montoAbono" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="clave">Forma de Pago</label>
+                                    <div>
+                                        <select class=" form-control " id="idFormaPagoAbono" name="idFormaPagoAbono">
+                                            <?php
+                                            if (isset($formas)) {
+                                                foreach ($formas as $uni) {
+                                                    echo '<option value="' . $uni['idFormaPago'] . '" >' .
+                                                        strtoupper($uni['formaPago']) . '</option>';
+                                                }
+                                            } ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+                        <input type="hidden" id="idCotizacionAbono" />
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="realizarAbono" class="btn btn-primary pull-right">Realizar Abono</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div id="modalTraspaso" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -847,7 +1048,7 @@ $tc = $resTC->valor;
                                         </select>
                                     </div>
                                 </div>
-                               
+
                             </div>
 
                         </div>
@@ -964,6 +1165,20 @@ $tc = $resTC->valor;
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                    <label for="clave">Vendedor</label>
+                                    <div>
+                                    <select class=" form-control " id="idVendedorM" name="idVendedorM">
+                                            <?php
+                                            if (isset($vendedores)) {
+                                                foreach ($vendedores as $uni) {
+                                                    echo '<option value="' . $uni['idUsuario'] . '" >' .
+                                                        strtoupper($uni['nombre']." ".$uni['apellidos']) . '</option>';
+                                                }
+                                            } ?>
+                                        </select>
+                                     </div>
+                                </div>
 
 
 
@@ -1104,6 +1319,95 @@ $tc = $resTC->valor;
         </div>
     </div>
 
+
+
+
+    <div id="modalChoferesUpdate" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Actualizar Chofer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="card-body">
+
+
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col-md-12">
+                                    <label for="anchoM">Chofer</label>
+                                    <div>
+                                        <input type="text" maxlength="100" class="form-control" id="choferM" name="choferM" placeholder="Chofer" />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <input type="hidden" id="idChofer" />
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="guardarChofer" class="btn btn-primary pull-right">Actualizar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modalCamionesUpdate" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Actualizar Unidad</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="card-body">
+
+
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col-md-6">
+                                    <label for="anchoM">Unidad</label>
+                                    <div>
+                                        <input type="text" maxlength="50" class="form-control" id="camionM" name="camionM" placeholder="Unidad" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="anchoM">Placas</label>
+                                    <div>
+                                        <input type="text" maxlength="50" class="form-control" id="placasMCam" name="placasMCam" placeholder="Placas" />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <input type="hidden" id="idCamion" />
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="guardarCamion" class="btn btn-primary pull-right">Actualizar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="modalProveedoresUpdate" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -1230,6 +1534,40 @@ $tc = $resTC->valor;
                 </div>
                 <div class="modal-footer">
                     <a href="#" id="finalizaOrden" class="btn btn-primary pull-right">Finalizar Orden de Compra</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modalCancelarAbono" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Cancelar Abono</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col-md-12">
+                                    <label>¿Esta seguro que desea cancelar el abono? </label>
+
+                                </div>
+
+                            </div>
+                        </div>
+                        <input type="hidden" id="idAbonoCancelar" />
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="cancelarAbono" class="btn btn-primary pull-right">Cancelar Abono</a>
                 </div>
             </div>
         </div>
@@ -1402,10 +1740,16 @@ $tc = $resTC->valor;
                                         <input type="number" step=".000001" maxlength="20" class="form-control" id="pesoTeoricoM" name="pesoTeoricoM" />
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label for="idCalibre">&nbsp;</label>
                                     <div>
                                         Kgs. / Metro.
+                                    </div>
+                                </div>
+                                <div class="col-4 col-md-3">
+                                    <label for="medidas">Medidas al revés</label>
+                                    <div>
+                                        <input type="checkbox" name="medidasM" id="medidasM">
                                     </div>
                                 </div>
 
@@ -1535,7 +1879,7 @@ $tc = $resTC->valor;
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Recibir Materia</h5>
+                    <h5 class="modal-title" id="exampleModalLongTitle">Recibir Material</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -1641,10 +1985,10 @@ $tc = $resTC->valor;
                         <div class="form-group">
                             <div class="form-row mt-2">
                                 <div class="col-md-6">
-                                    <label for="codigoBarras">Código de Barras</label>
+                                    <label for="codigoBarras"># Recepción o Devolución </label>
                                     <div>
                                         <div>
-                                            <input type="text" class="form-control" id="codigoBarrasProd" name="codigoBarrasProd" placeholder="R#" />
+                                            <input type="text" class="form-control" id="codigoBarrasProd" name="codigoBarrasProd" placeholder="R# / D#" />
                                         </div>
                                     </div>
                                 </div>
@@ -1674,7 +2018,7 @@ $tc = $resTC->valor;
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="idUnidadProd">Almacen</label>
+                                    <label for="idUnidadProd">Almacen Destino</label>
                                     <div>
                                         <select class=" form-control " name="idAlmacenProd" id="idAlmacenProd">
                                             <option value="0">- Seleccione Almacen - </option>

@@ -2,6 +2,7 @@
 
 include_once 'RespuestaBD.php';
 include_once 'CatalogosModel.php';
+include_once 'DevolucionesModel.php';
 
 
 
@@ -65,9 +66,24 @@ class CotizacionesModel
                 extract($row);
                 $detalle = $this->obtenerDetalleCotizacion($idCotizacion);
 
+                $abonos = $this->obtenerAbonosCotizacion($idCotizacion)->registros;
+
+                $totalAbonos = 0;
+                $pedidoPagado = false;
+                foreach ($abonos as $abo) {
+                    if ($abo['usuarioCancela'] == "") {
+                        $totalAbonos = $totalAbonos +  $abo['monto'];
+                    }
+                }
+
+                if ($totalAbonos >= $grantotal) {
+                    $pedidoPagado = true;
+                }
+
                 $productos = $detalle->registros;
                 $terminada = true;
                 $todasConRemisiones = true;
+                $tieneRemision = false;
                 foreach ($productos as $prod) {
                     if (!$prod['partidaTerminada']) {
                         $terminada = false;
@@ -75,6 +91,10 @@ class CotizacionesModel
 
                     if (!$prod['todasConRemisiones']) {
                         $todasConRemisiones = false;
+                    }
+
+                    if ($prod['tieneRemision']) {
+                        $tieneRemision = true;
                     }
                 }
 
@@ -88,10 +108,17 @@ class CotizacionesModel
                     "montototal" => $montototal,
                     "descuento" => $descuento,
                     "observaciones" => $observaciones,
+                    "tieneRemision" => $tieneRemision,
+                    "idUsuario" => $idUsuario,
+                    "costoEnvio" => $costoEnvio,
                     "cliente" => $cliente,
+                    "cancelado" => $cancelado,
                     "condiciones" => $condiciones,
                     "vigencia" => $vigencia,
                     "formapago" => $formapago,
+                    "pedidoPagado" => $pedidoPagado,
+                    "abonos" => $abonos,
+                    "totalAbonos" => $totalAbonos,
                     "semaforo" => $semaforo,
                     "lugarentrega" => $lugarentrega,
                     "grantotal" => $grantotal,
@@ -158,7 +185,8 @@ class CotizacionesModel
                 extract($row);
 
                 $detalle =  $this->obtenerDetalleRemision($idRemision)->registros;
-
+                $devoluciones =  $this->obtenerDetalleRemisionDevolucion($idRemision)->registros;
+                $detalle = array_merge($detalle, $devoluciones);
                 $registro_item = array(
                     "idRemision" => $idRemision,
                     "idUsuario" => $idUsuario,
@@ -193,7 +221,10 @@ class CotizacionesModel
     function obtenerRemision($idRemision)
     {
 
-        $query = "SELECT  r.* FROM  remisiones r
+        $query = "SELECT  r.idRemision,r.idUsuario,r.fecha,r.tipoUnidad,r.contenedor
+        ,ch.chofer,ca.camion,ca.placas,r.idPedido,r.usuario FROM  remisiones r
+            left join choferes ch on ch.idChofer=r.operador
+            left join camiones ca on ca.idCamion = r.placas
             where idRemision = " . $idRemision . "
               ";
 
@@ -217,12 +248,13 @@ class CotizacionesModel
                 extract($row);
 
                 $detalle =  $this->obtenerDetalleRemision($idRemision)->registros;
-
+                $devoluciones =  $this->obtenerDetalleRemisionDevolucion($idRemision)->registros;
+                $detalle = array_merge($detalle, $devoluciones);
                 $registro_item = array(
                     "idRemision" => $idRemision,
                     "idUsuario" => $idUsuario,
                     "fecha" => $fecha,
-                    "operador" => $operador,
+                    "operador" => $chofer,
                     "tipoUnidad" => $tipoUnidad,
                     "placas" => $placas,
                     "contenedor" => $contenedor,
@@ -254,17 +286,18 @@ class CotizacionesModel
     function obtenerDetalleRemision($idRemision)
     {
 
-        $query = "SELECT rd.idRemisionDet,rd.idRemision,pr.kilos,pr.cantidad,pr.usuario,pr.fecha,
-        u.unidad unidadFactura,a.ancho,c.calibre,t.tipo,p.sku,p.producto ,cd.metros,p.largo,cd.preciounitario
+        $query = "SELECT alm.almacen,rd.idRemisionDet,rd.idRemision,pr.kilos,pr.cantidad,pr.usuario,pr.fecha,
+        u.unidad unidadFactura,a.ancho,c.calibre,t.tipo,p.sku,p.producto ,cd.metros,p.largo,cd.preciounitario,pr.idProduccion
          FROM  remisiondetalle rd
                 inner join producciones pr on pr.idProduccion = rd.idProduccion
-                inner join productos p on p.idProducto = pr.idProducto
+                inner join productos p on p.idProducto = pr.idProductoProduccion
                 inner join cotizaciondetalle cd on cd.idCotizacionDet = pr.idCotizacionDetalle
                 inner join unidades u on u.idUnidad=p.idUnidadFactura
                 inner join calibres c on c.idCalibre = p.idCalibre
                 inner join tipos t on t.idTipo = p.idTipo
                 inner join anchos a on a.idAncho= p.idAncho
-                where rd.idRemision = ".$idRemision."
+                inner join almacenes alm on alm.idAlmacen = pr.idAlmacen
+                where rd.idRemision = " . $idRemision . "
 
               ";
 
@@ -301,10 +334,91 @@ class CotizacionesModel
                     "calibre" => $calibre,
                     "usuario" => $usuario,
                     "fecha" => $fecha,
-                    
+                    "idProduccion" => $idProduccion,
+
                     "tipo" => $tipo,
                     "sku" => $sku,
                     "producto" => $producto,
+                    "almacen" => $almacen,
+                    "metros" => $metros
+
+                );
+
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
+    function obtenerDetalleRemisionDevolucion($idRemision)
+    {
+
+        $query = "SELECT alm.almacen,rd.idRemisionDet,us.nombre usuario,rd.idRemision,pr.kilos,pr.cantidad,pr.fecha,
+        u.unidad unidadFactura,a.ancho,c.calibre,t.tipo,p.sku,p.producto ,cd.metros,p.largo,cd.preciounitario,pr.idDevolucionProduccion
+         FROM  remisiondetalle rd
+                inner join devolucionesproducciones pr on pr.idDevolucionProduccion = rd.idDevolucionProduccion
+                inner join productos p on p.idProducto = pr.idProducto
+                inner join cotizaciondetalle cd on cd.idCotizacionDet = pr.idCotizacionDetalle
+                inner join unidades u on u.idUnidad=p.idUnidadFactura
+                inner join usuarios us on us.idUsuario=pr.idUsuario
+                inner join calibres c on c.idCalibre = p.idCalibre
+                inner join tipos t on t.idTipo = p.idTipo
+                inner join anchos a on a.idAncho= p.idAncho
+                inner join almacenes alm on alm.idAlmacen = pr.idAlmacen
+                where rd.idRemision = " . $idRemision . "
+
+              ";
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // extract row
+                // this will make $row['name'] to
+                // just $name only
+                extract($row);
+
+
+
+                $registro_item = array(
+                    "idRemision" => $idRemision,
+                    "idRemisionDet" => $idRemisionDet,
+                    "kilos" => $kilos,
+                    "cantidad" => $cantidad,
+                    "idDevolucionProduccion" => $idDevolucionProduccion,
+                    "unidadFactura" => $unidadFactura,
+                    "preciounitario" => $preciounitario,
+                    "ancho" => $ancho,
+                    "largo" => $largo,
+                    "calibre" => $calibre,
+                    "usuario" => $usuario,
+                    "fecha" => $fecha,
+
+                    "tipo" => $tipo,
+                    "sku" => $sku,
+                    "producto" => $producto,
+                    "almacen" => $almacen,
                     "metros" => $metros
 
                 );
@@ -330,7 +444,7 @@ class CotizacionesModel
     {
 
         $query = "SELECT idProducto,idCotizacion from cotizaciondetalle 
-                where idCotizacionDet = ".$idCotizacionDet."
+                where idCotizacionDet = " . $idCotizacionDet . "
 
               ";
 
@@ -377,6 +491,8 @@ class CotizacionesModel
 
 
 
+
+
     function validaRecepcion($idRecepcion)
     {
 
@@ -404,7 +520,8 @@ class CotizacionesModel
 
 
                 $registro_item = array(
-                    "idRecepcion" => $idRecepcion
+                    "idRecepcion" => $idRecepcion,
+                    "idProducto" => $idProducto
 
                 );
 
@@ -462,6 +579,52 @@ class CotizacionesModel
     }
 
 
+    function cancelarPedido($idCotizacion)
+    {
+
+
+        $query = "update  cotizaciones set cancelado=1  WHERE idCotizacion=" . $idCotizacion;
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute();
+    }
+
+
+    function cancelarRemision($idRemision)
+    {
+
+
+        $remision = $this->obtenerRemision($idRemision)->registros[0];
+
+
+        $query = "delete from remisiondetalle where idRemision = " . $idRemision;
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute();
+
+
+        $query = "delete from remisiones where idRemision = " . $idRemision;
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute();
+
+
+        foreach ($remision['detalle'] as $det) {
+            if ($det['idProduccion'] != "") {
+                $query = "delete from salidas where idProduccion = " . $det['idProduccion'];
+                $stmt = $this->conn->prepare($query);
+
+                $stmt->execute();
+            } else {
+                $query = "delete from salidas where idDevolucionProduccion = " . $det['idDevolucionProduccion'];
+                $stmt = $this->conn->prepare($query);
+
+                $stmt->execute();
+            }
+        }
+    }
+
+
     function generarMateriaProduccion(
         $idCotizacionDetM,
         $kilos,
@@ -470,9 +633,13 @@ class CotizacionesModel
         $idUsuario,
         $idProducto,
         $idAlmacen,
-        $codigoBarras,$utilizadosUsM
+        $codigoBarras,
+        $utilizadosUsM
     ) {
 
+        if ($utilizadosUsM == "") {
+            $utilizadosUsM = 0;
+        }
 
         $respuesta = new RespuestaBD();
 
@@ -485,7 +652,8 @@ class CotizacionesModel
     SET
     idCotizacionDetalle=:idCotizacionDetalle,kilos=:kilos,cantidad=:cantidad,
     usuario=:usuario,idUsuario=:idUsuario,idRecepcion=:idRecepcion,imprimir=1,
-    idProducto=:idProducto,idAlmacen=:idAlmacen,kilosUsuario=:utilizadosUsM, fecha=now()";
+    idProductoRecepcion=:idProductoRecepcion,idProductoProduccion=:idProductoProduccion
+    ,idAlmacen=:idAlmacen,kilosUsuario=:utilizadosUsM, fecha=now()";
 
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":idCotizacionDetalle", $idCotizacionDetM);
@@ -493,12 +661,13 @@ class CotizacionesModel
             $stmt->bindParam(":kilos", $kilos);
             $stmt->bindParam(":cantidad", $cantidad);
             $stmt->bindParam(":idUsuario", $idUsuario);
-            $stmt->bindParam(":idProducto", $idProducto);
+            $stmt->bindParam(":idProductoRecepcion", $respuesta->registros[0]['idProducto']);
             $stmt->bindParam(":idAlmacen", $idAlmacen);
+            $stmt->bindParam(":idProductoProduccion", $idProducto);
             $stmt->bindParam(":idRecepcion", $codigoBarras);
             $stmt->bindParam(":utilizadosUsM", $utilizadosUsM);
 
-          
+
 
 
 
@@ -520,39 +689,174 @@ class CotizacionesModel
     }
 
 
+
+
+    function generarMateriaDevolucion(
+        $idCotizacionDetM,
+        $kilos,
+        $cantidad,
+        $usuario,
+        $idUsuario,
+        $idProducto,
+        $idAlmacen,
+        $codigoBarras,
+        $utilizadosUsM,
+        $db
+    ) {
+
+        $devModel = new DevolucionesModel($db);
+
+        $respuesta = new RespuestaBD();
+
+        //primero hay que validar que la devolucion tenga cantidad y sea el mismo producto
+
+
+
+
+        $res = $devModel->obtenerDevolucion($codigoBarras);
+
+        if (count($res->registros) > 0) {
+
+            $devolucion = $res->registros[0];
+            $idProductoDevolucion = $devolucion['idProducto'];
+
+            if ($idProductoDevolucion == $idProducto) {
+
+                if ($cantidad <= $devolucion['restante']) {
+                    //si ya sabemos que se tiene la cantidad y el tipo de producto, insertamos en devolucion producciones y en producciones
+                    $query = "INSERT INTO
+                    devolucionesproducciones
+                SET
+                idCotizacionDetalle=:idCotizacionDetalle,idDevolucion=:idDevolucion,
+                kilos=:kilos,cantidad=:cantidad,
+                idUsuario=:idUsuario,imprimir=1,
+                idProducto=:idProducto
+                ,idAlmacen=:idAlmacen,kilosUsuario=:utilizadosUsM, fecha=now()";
+
+                    if ($utilizadosUsM == "") {
+                        $utilizadosUsM = 0;
+                    }
+
+                    $stmt = $this->conn->prepare($query);
+                    $stmt->bindParam(":idCotizacionDetalle", $idCotizacionDetM);
+                    $stmt->bindParam(":idDevolucion", $codigoBarras);
+                    $stmt->bindParam(":kilos", $kilos);
+                    $stmt->bindParam(":cantidad", $cantidad);
+                    $stmt->bindParam(":idUsuario", $idUsuario);
+                    $stmt->bindParam(":idProducto", $idProducto);
+                    $stmt->bindParam(":idAlmacen", $idAlmacen);
+                    $stmt->bindParam(":utilizadosUsM", $utilizadosUsM);
+
+
+
+
+
+                    if ($stmt->execute()) {
+                        $idInsertado = $this->conn->lastInsertId();
+                        $respuesta->exito = true;
+                        $respuesta->mensaje = "";
+                        $respuesta->valor = $idInsertado;
+                        return $respuesta;
+                    } else {
+                        $respuesta->exito = false;
+                        $mensaje = $stmt->errorInfo();
+                        $respuesta->mensaje = "Ocurrió un problema actualizando";
+                        return $respuesta;
+                    }
+                } else {
+                    $respuesta->exito = false;
+                    $respuesta->mensaje = "La devolución no tiene suficiente cantidad, se requieren " . $cantidad .
+                        " y solo se tienen " . $devolucion['restante'];
+                    return $respuesta;
+                }
+            } else {
+                $respuesta->exito = false;
+                $respuesta->mensaje = "El producto que se esta produciendo no es el mismo de la devolución";
+                return $respuesta;
+            }
+        } else {
+            $respuesta->exito = false;
+            $respuesta->mensaje = "La devolución no existe";
+            return $respuesta;
+        }
+    }
+
+
     function darSalidaProduccion($idProduccion, $idUsuario, $usuario)
     {
 
         $respuesta = new RespuestaBD();
-        $respuesta = $this->obtenerSalidasProduccion($idProduccion);
 
-        if (!$respuesta->exito) {
-            return $respuesta;
+
+        if (strpos($idProduccion, 'D') !== false) {
+
+            $idProduccion = str_replace("D", "", $idProduccion);
+
+            $respuesta = $this->validaSalidasDevolucionProduccion($idProduccion);
+
+            if (!$respuesta->exito) {
+                return $respuesta;
+            } else {
+
+                //primero insertamos 
+                $query = "INSERT INTO
+            salidas
+        SET
+        idDevolucionProduccion=:idProduccion,usuario=:usuario,idUsuario=:idUsuario, fecha=now()";
+
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(":idProduccion", $idProduccion);
+                $stmt->bindParam(":usuario", $usuario);
+                $stmt->bindParam(":idUsuario", $idUsuario);
+
+
+                if ($stmt->execute()) {
+                    $idInsertado = $this->conn->lastInsertId();
+                    $respuesta->exito = true;
+                    $respuesta->mensaje = "";
+                    $respuesta->valor = $idInsertado;
+                    return $respuesta;
+                } else {
+                    $respuesta->exito = false;
+                    $mensaje = $stmt->errorInfo();
+                    $respuesta->mensaje = "Ocurrió un problema actualizando";
+                    return $respuesta;
+                }
+            }
         } else {
 
-            //primero insertamos 
-            $query = "INSERT INTO
+
+
+            $respuesta = $this->obtenerSalidasProduccion($idProduccion);
+
+            if (!$respuesta->exito) {
+                return $respuesta;
+            } else {
+
+                //primero insertamos 
+                $query = "INSERT INTO
             salidas
         SET
         idProduccion=:idProduccion,usuario=:usuario,idUsuario=:idUsuario, fecha=now()";
 
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(":idProduccion", $idProduccion);
-            $stmt->bindParam(":usuario", $usuario);
-            $stmt->bindParam(":idUsuario", $idUsuario);
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(":idProduccion", $idProduccion);
+                $stmt->bindParam(":usuario", $usuario);
+                $stmt->bindParam(":idUsuario", $idUsuario);
 
 
-            if ($stmt->execute()) {
-                $idInsertado = $this->conn->lastInsertId();
-                $respuesta->exito = true;
-                $respuesta->mensaje = "";
-                $respuesta->valor = $idInsertado;
-                return $respuesta;
-            } else {
-                $respuesta->exito = false;
-                $mensaje = $stmt->errorInfo();
-                $respuesta->mensaje = "Ocurrió un problema actualizando";
-                return $respuesta;
+                if ($stmt->execute()) {
+                    $idInsertado = $this->conn->lastInsertId();
+                    $respuesta->exito = true;
+                    $respuesta->mensaje = "";
+                    $respuesta->valor = $idInsertado;
+                    return $respuesta;
+                } else {
+                    $respuesta->exito = false;
+                    $mensaje = $stmt->errorInfo();
+                    $respuesta->mensaje = "Ocurrió un problema actualizando";
+                    return $respuesta;
+                }
             }
         }
 
@@ -640,28 +944,53 @@ class CotizacionesModel
         $respuesta = new RespuestaBD();
 
 
+        if (strpos($idProduccion, 'D') !== false) {
+            //primero insertamos la remision
+            $query = "INSERT INTO
+        remisiondetalle 
+    SET
+    idRemision=:idRemision,idDevolucionProduccion=:idDevolucionProduccion";
+
+            $idProduccion = str_replace("D", "", $idProduccion);
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":idRemision", $idRemision);
+            $stmt->bindParam(":idDevolucionProduccion", $idProduccion);
 
 
-        //primero insertamos la remision
-        $query = "INSERT INTO
+            if ($stmt->execute()) {
+                $respuesta->exito = true;
+                $respuesta->mensaje = "";
+                return $respuesta;
+            } else {
+                $respuesta->exito = false;
+                $mensaje = $stmt->errorInfo();
+                $respuesta->mensaje = "Ocurrió un problema actualizando";
+                return $respuesta;
+            }
+        } else {
+
+            //primero insertamos la remision
+            $query = "INSERT INTO
             remisiondetalle 
         SET
         idRemision=:idRemision,idProduccion=:idProduccion";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":idRemision", $idRemision);
-        $stmt->bindParam(":idProduccion", $idProduccion);
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":idRemision", $idRemision);
+            $stmt->bindParam(":idProduccion", $idProduccion);
 
 
-        if ($stmt->execute()) {
-            $respuesta->exito = true;
-            $respuesta->mensaje = "";
-            return $respuesta;
-        } else {
-            $respuesta->exito = false;
-            $mensaje = $stmt->errorInfo();
-            $respuesta->mensaje = "Ocurrió un problema actualizando";
-            return $respuesta;
+            if ($stmt->execute()) {
+                $respuesta->exito = true;
+                $respuesta->mensaje = "";
+                return $respuesta;
+            } else {
+                $respuesta->exito = false;
+                $mensaje = $stmt->errorInfo();
+                $respuesta->mensaje = "Ocurrió un problema actualizando";
+                return $respuesta;
+            }
         }
 
 
@@ -678,6 +1007,60 @@ class CotizacionesModel
 
         $query = "SELECT *  
          from salidas where idProduccion =" . $idProduccion;
+
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // extract row
+                // this will make $row['name'] to
+                // just $name only
+                extract($row);
+
+
+
+                $registro_item = array(
+                    "usuario" => $usuario,
+                    "fecha" => $fecha
+
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "Ya se le dió salida a este producto terminado ";
+            $respuesta->exito = false;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = " ";
+            $respuesta->exito = true;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
+    function validaSalidasDevolucionProduccion($idProduccion)
+    {
+
+
+
+        $query = "SELECT *  
+         from salidas where idDevolucionProduccion =" . $idProduccion;
 
 
 
@@ -874,17 +1257,24 @@ class CotizacionesModel
         return $respuesta;
     }
 
-   
+
 
     function  obtenerAlmacenesDisponibles($idRecepcion)
     {
 
+        if (strpos($idRecepcion, 'D') !== false) {
 
-        $query = "SELECT *
+            $idRecepcion = str_replace("D", "", $idRecepcion);
+
+            $query = "SELECT *
+            from almacenes where idAlmacen <> 
+            (select idAlmacen from devoluciones where idDevolucion = " . $idRecepcion . ") ";
+        } else {
+
+            $query = "SELECT *
          from almacenes where idAlmacen <> 
-         (select idAlmacen from recepciones where idRecepcion = ".$idRecepcion.") ";
-         
-
+         (select idAlmacen from recepciones where idRecepcion = " . $idRecepcion . ") ";
+        }
 
 
         // prepare query statement
@@ -924,6 +1314,7 @@ class CotizacionesModel
             $respuesta->mensaje = "No se encontraron datos ";
             $respuesta->exito = false;
         }
+
 
 
         return $respuesta;
@@ -1112,35 +1503,51 @@ class CotizacionesModel
     }
 
 
-    function actualizarCostoEnvio($idCotizacion,$costo)
+    function actualizarCostoEnvio($idCotizacion, $costo)
     {
         $respuesta = new RespuestaBD();
-        
 
-        
-            $query = "update cotizaciones set costoEnvio =".$costo." where idCotizacion = " . $idCotizacion;
-            $stmt = $this->conn->prepare($query);
-            $stmt->execute();
-            $respuesta->mensaje = "";
-            $respuesta->exito = true;
-       
+
+
+        $query = "update cotizaciones set costoEnvio =" . $costo . " where idCotizacion = " . $idCotizacion;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $respuesta->mensaje = "";
+        $respuesta->exito = true;
+
 
         return $respuesta;
     }
 
 
-    function actualizaSemaforo($idCotizacion,$color)
+    function  realizarAbono($idCotizacion, $montoAbono, $idUsuario, $idFormaPago)
     {
         $respuesta = new RespuestaBD();
-        
 
-        
-            $query = "update cotizaciones set semaforo ='".$color."' where idCotizacion = " . $idCotizacion;
-            $stmt = $this->conn->prepare($query);
-            $stmt->execute();
-            $respuesta->mensaje = "";
-            $respuesta->exito = true;
-       
+        $query = "insert into abonos (idUsuario,monto,fecha,idCotizacion,idFormaPago) 
+            values (" . $idUsuario . "," . $montoAbono . ",
+            now()," . $idCotizacion . "," . $idFormaPago . ")";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $respuesta->mensaje = "";
+        $respuesta->exito = true;
+
+
+        return $respuesta;
+    }
+
+    function actualizaSemaforo($idCotizacion, $color)
+    {
+        $respuesta = new RespuestaBD();
+
+
+
+        $query = "update cotizaciones set semaforo ='" . $color . "' where idCotizacion = " . $idCotizacion;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $respuesta->mensaje = "";
+        $respuesta->exito = true;
+
 
         return $respuesta;
     }
@@ -1148,20 +1555,61 @@ class CotizacionesModel
 
     function cancelarProduccion($idProduccion)
     {
-        $respuesta = new RespuestaBD();
-        $respuesta = $this->validaFolioProduccion($idProduccion);
 
-        if ($respuesta->exito) {
-            $query = "delete from producciones where idProduccion = " . $idProduccion;
-            $stmt = $this->conn->prepare($query);
-            $stmt->execute();
-            $respuesta->mensaje = "";
-            $respuesta->exito = true;
+
+        $respuesta = new RespuestaBD();
+
+        if (strpos($idProduccion, 'D') !== false) {
+
+            $idProduccion = str_replace("D", "", $idProduccion);
+
+            $respuesta = $this->validaFolioDevolucionProduccion($idProduccion);
+
+            if ($respuesta->exito) {
+                $query = "delete from devolucionesproducciones where idDevolucionProduccion = " . $idProduccion;
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute();
+                $respuesta->mensaje = "";
+                $respuesta->exito = true;
+            }
+        } else {
+
+
+            $respuesta = $this->validaFolioProduccion($idProduccion);
+
+            if ($respuesta->exito) {
+                $query = "delete from producciones where idProduccion = " . $idProduccion;
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute();
+                $respuesta->mensaje = "";
+                $respuesta->exito = true;
+            }
         }
 
 
         return $respuesta;
     }
+
+
+    function cancelarAbono($idAbono, $idUsuario)
+    {
+        $respuesta = new RespuestaBD();
+
+
+
+        $query = "update abonos set idUsuarioCancela = " . $idUsuario . ", 
+            fechaCancela=now() where idAbono=" . $idAbono . "";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $respuesta->mensaje = "";
+        $respuesta->exito = true;
+
+
+
+        return $respuesta;
+    }
+
+
 
 
 
@@ -1226,59 +1674,75 @@ class CotizacionesModel
     }
 
 
-    
 
-    function realizarTraspaso($idRecepcion, $idAlmacen,$idUsuario)
+    function actualizarPrecioCotDet($idCotizacionDet, $precio)
     {
 
-
-        $idAlmacenSale = $this->obtenerDatosCodigoBarras($idRecepcion)->registros[0]['idAlmacen'];
-
-
-       
-
-        $query = "update recepciones set idalmacen=" . $idAlmacen . " where idRecepcion=" . $idRecepcion;
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-
-
-        $query = "insert into traspasos (idUsuario, idAlmacen, tipo, fecha, idRecepcion) values
-        (".$idUsuario.",".$idAlmacenSale.",'S',now(),".$idRecepcion.")"; 
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-
-        $query = "insert into traspasos (idUsuario, idAlmacen, tipo, fecha, idRecepcion) values
-        (".$idUsuario.",".$idAlmacen.",'E',addtime(now(),'2'),".$idRecepcion.")"; 
+        $query = "update cotizaciondetalle set precioUnitario=" . $precio . " where idCotizacionDet=" . $idCotizacionDet;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
     }
 
-    function actualizarMetrosCotDet($idCotizacionDet, $metros,$db)
+
+
+
+    function realizarTraspaso($idRecepcion, $idAlmacen, $idUsuario)
     {
 
-        $detalle=$this->consultaPartidaCotizacion($idCotizacionDet)->registros[0];
-        $idProducto=$detalle['idProducto'];
-        $idCotizacion=$detalle['idCotizacion'];
+        if (strpos($idRecepcion, 'D') !== false) {
 
-        $cotizacion =$this->obtenerCotizacion($idCotizacion)->registros[0];
+            $idRecepcion = str_replace("D", "", $idRecepcion);
+
+            $query = "update devoluciones set idalmacen=" . $idAlmacen . " where idDevolucion=" . $idRecepcion;
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+        } else {
+
+            $idAlmacenSale = $this->obtenerDatosCodigoBarras($idRecepcion)->registros[0]['idAlmacen'];
+
+
+
+
+            $query = "update recepciones set idalmacen=" . $idAlmacen . " where idRecepcion=" . $idRecepcion;
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+
+
+            $query = "insert into traspasos (idUsuario, idAlmacen, tipo, fecha, idRecepcion) values
+        (" . $idUsuario . "," . $idAlmacenSale . ",'S',now()," . $idRecepcion . ")";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+
+            $query = "insert into traspasos (idUsuario, idAlmacen, tipo, fecha, idRecepcion) values
+        (" . $idUsuario . "," . $idAlmacen . ",'E',addtime(now(),'2')," . $idRecepcion . ")";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+        }
+    }
+
+    function actualizarMetrosCotDet($idCotizacionDet, $metros, $db)
+    {
+
+        $detalle = $this->consultaPartidaCotizacion($idCotizacionDet)->registros[0];
+        $idProducto = $detalle['idProducto'];
+        $idCotizacion = $detalle['idCotizacion'];
+
+        $cotizacion = $this->obtenerCotizacion($idCotizacion)->registros[0];
         $tipoPrecio = $cotizacion['tipoPrecio'];
         //primero tenemos que ir por el producto 
         $catModel = new CatalogosModel($db);
-        $producto=$catModel->obtenerProducto($idProducto)->registros[0];
-        
-        if($tipoPrecio=="G")
-        {
-            $precioProductoSinIva=$producto['precioGen'];
-        }
-        else
-        {
-            $precioProductoSinIva=$producto['precioRev'];
-        }
-        $precioConIva=$precioProductoSinIva*1.16;
-        $preciUnitario=$precioConIva*$metros;
-        $preciUnitario=round($preciUnitario);
+        $producto = $catModel->obtenerProducto($idProducto)->registros[0];
 
-        $query = "update cotizaciondetalle set preciounitario=".$preciUnitario.", metros=" . $metros . " where idCotizacionDet=" . $idCotizacionDet;
+        if ($tipoPrecio == "G") {
+            $precioProductoSinIva = $producto['precioGen'];
+        } else {
+            $precioProductoSinIva = $producto['precioRev'];
+        }
+        $precioConIva = $precioProductoSinIva * 1.16;
+        $preciUnitario = $precioConIva * $metros;
+        $preciUnitario = round($preciUnitario);
+
+        $query = "update cotizaciondetalle set preciounitario=" . $preciUnitario . ", metros=" . $metros . " where idCotizacionDet=" . $idCotizacionDet;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
     }
@@ -1316,11 +1780,21 @@ class CotizacionesModel
                 $productos = $detalle->registros;
 
 
+                $tieneRemision = false;
+                foreach ($productos as $prod) {
+
+
+                    if ($prod['tieneRemision']) {
+                        $tieneRemision = true;
+                    }
+                }
+
 
                 $registro_item = array(
                     "idCotizacion" => $idCotizacion,
                     "idCliente" => $idCliente,
                     "fecha" => $fecha,
+                    "tieneRemision" => $tieneRemision,
                     "montototal" => $montototal,
                     "costoEnvio" => $costoEnvio,
                     "descuento" => $descuento,
@@ -1332,6 +1806,7 @@ class CotizacionesModel
                     "nombreUsuario" => $nombreUsuario,
                     "apellidos" => $apellidos,
                     "cliente" => $cliente,
+                    "idUsuario" => $idUsuario,
                     "direccion" => $direccion,
                     "mail" => $mail,
                     "vigencia" => $vigencia,
@@ -1390,6 +1865,36 @@ class CotizacionesModel
 
 
 
+    function validaFolioDevolucionProduccion($idProduccion)
+    {
+
+
+        $query = "Select * from remisiondetalle where idDevolucionProduccion = " . $idProduccion . "";
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+
+
+            $respuesta->mensaje = "El folio de devolución producción no se puede eliminar porque ya se le dió Salida";
+            $respuesta->exito = false;
+        } else {
+            $respuesta->mensaje = " ";
+            $respuesta->exito = true;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
     function recalcularCotizacion($idCotizacion)
     {
 
@@ -1402,9 +1907,9 @@ class CotizacionesModel
         $subtotal = 0;
         foreach ($productos as $reg) {
             $totalPartida = 0;
-           
-                $totalPartida = $reg['preciounitario'] * $reg['cantidad'];
-            
+
+            $totalPartida = $reg['preciounitario'] * $reg['cantidad'];
+
 
             $subtotal += $totalPartida;
         }
@@ -1415,7 +1920,7 @@ class CotizacionesModel
             $grantotal = $subtotal - ($subtotal * $descuento / 100);
         }
 
-        $subtotal=$grantotal / 1.16;
+        $subtotal = $grantotal / 1.16;
 
         $this->actualizarTotales($subtotal, $grantotal, $idCotizacion);
 
@@ -1429,7 +1934,7 @@ class CotizacionesModel
 
     function obtenerDetalleCotizacion($idCotizacion)
     {
-        $query = "SELECT  od.*,uf.unidad unidadFactura,u.unidad,p.sku,p.producto,
+        $query = "SELECT  od.*,uf.unidad unidadFactura,u.unidad,p.sku,p.producto,p.medidasreves,
         c.calibre,t.tipo,p.pesoTeorico,p.largo,p.entrada,p.salida,a.ancho FROM  cotizaciondetalle od
              
              inner join productos p on p.idProducto=od.idProducto
@@ -1456,14 +1961,29 @@ class CotizacionesModel
                 extract($row);
 
                 $producciones = $this->obtenerProducciones($idCotizacionDet)->registros;
+                $devolucionesproducciones = $this->obtenerProduccionesDevoluciones($idCotizacionDet)->registros;
+
+
 
                 $partidaTerminada = false;
                 $cantidadProcesada = 0;
                 $todasConRemisiones = true;
-                if (count($producciones) > 0) {
+                $tieneRemision = false;
+                if (count($producciones) > 0 || count($devolucionesproducciones) > 0) {
                     foreach ($producciones as $prod) {
                         if (!$prod['tieneRemision']) {
                             $todasConRemisiones = false;
+                        } else {
+                            $tieneRemision = true;
+                        }
+                        $cantidadProcesada = $cantidadProcesada + $prod['cantidad'];
+                    }
+
+                    foreach ($devolucionesproducciones as $prod) {
+                        if (!$prod['tieneRemision']) {
+                            $todasConRemisiones = false;
+                        } else {
+                            $tieneRemision = true;
                         }
                         $cantidadProcesada = $cantidadProcesada + $prod['cantidad'];
                     }
@@ -1482,6 +2002,8 @@ class CotizacionesModel
                     "idProducto" => $idProducto,
                     "unidad" => $unidad,
                     "calibre" => $calibre,
+                    "tieneRemision" => $tieneRemision,
+                    "medidasreves" => $medidasreves,
                     "tipo" => $tipo,
                     "sku" => $sku,
                     "ancho" => $ancho,
@@ -1491,7 +2013,7 @@ class CotizacionesModel
                     "salida" => $salida,
                     "idUnidad" => $idUnidad,
                     "cantidad" => $cantidad,
-                    "producciones" => $producciones,
+                    "devolucionesproducciones" => $devolucionesproducciones,
                     "pesoTeorico" => $pesoTeorico,
                     "partidaTerminada" => $partidaTerminada,
                     "todasConRemisiones" => $todasConRemisiones,
@@ -1500,6 +2022,60 @@ class CotizacionesModel
                     "preciounitario" => $preciounitario,
                     "precioUM" => $precioUM,
                     "metros" => $metros
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
+    function obtenerAbonosCotizacion($idCotizacion)
+    {
+        $query = "SELECT  a.*,u.nombre usuario,uc.nombre usuarioCancela,f.formapago FROM  abonos a
+             
+            
+             inner join usuarios u on u.idUsuario=a.idUsuario
+             left join formaspago f on f.idFormaPago=a.idFormaPago
+             left join usuarios uc on uc.idUsuario=a.idUsuarioCancela
+             where idCotizacion=" . $idCotizacion;
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+                extract($row);
+
+
+
+
+                $registro_item = array(
+                    "idAbono" => $idAbono,
+                    "monto" => $monto,
+                    "formapago" => $formapago,
+                    "fecha" => $fecha,
+                    "usuarioCancela" => $usuarioCancela,
+                    "fechaCancela" => $fechaCancela,
+                    "usuario" => $usuario
                 );
 
                 array_push($arreglo, $registro_item);
@@ -1573,12 +2149,71 @@ class CotizacionesModel
 
 
 
+    function obtenerProduccionesDevoluciones($idCotizacionDetalle)
+    {
+        $query = "SELECT  p.*,rd.idRemision, alm.almacen,u.nombre usuario FROM  devolucionesproducciones p
+        inner join usuarios u on u.idUsuario = p.idUsuario 
+        inner join almacenes alm on alm.idAlmacen = p.idAlmacen
+            left join remisiondetalle rd on rd.idDevolucionProduccion =p.idDevolucionProduccion
+             where p.idCotizacionDetalle=" . $idCotizacionDetalle;
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+                extract($row);
+
+                $tieneRemision = false;
+
+                if ($idRemision != null && $idRemision != "") {
+                    $tieneRemision = true;
+                }
+
+                $registro_item = array(
+                    "idDevolucionProduccion" => $idDevolucionProduccion,
+                    "kilos" => $kilos,
+                    "usuario" => $usuario,
+                    "almacen" => $almacen,
+                    "cantidad" => $cantidad,
+                    "idUsuario" => $idUsuario,
+                    "tieneRemision" => $tieneRemision,
+                    "fecha" => $fecha
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
+
+
+
 
     function obtenerUltimasProducciones($cantidad)
     {
         $query = "SELECT  p.*,cd.idCotizacion,pr.producto,c.calibre,
         t.tipo,u.unidad unidadFactura,pr.largo,a.ancho,cd.metros,pr.sku,remd.idRemisionDet FROM  producciones p
-        inner join productos pr on pr.idProducto = p.idProducto
+        inner join productos pr on pr.idProducto = p.idProductoProduccion
         inner join calibres c on c.idCalibre = pr.idCalibre
         inner join anchos a on a.idAncho=pr.idAncho
         inner join unidades u on u.idUnidad=pr.idUnidadFactura
@@ -1587,7 +2222,7 @@ class CotizacionesModel
         left join remisiondetalle remd on remd.idProduccion = p.idProduccion
 
             
-             order by idProduccion desc limit ".$cantidad;
+             order by idProduccion desc limit " . $cantidad;
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
@@ -1608,6 +2243,78 @@ class CotizacionesModel
 
                 $registro_item = array(
                     "idProduccion" => $idProduccion,
+                    "tipoProd" => "P",
+                    "idCotizacion" => $idCotizacion,
+                    "kilos" => $kilos,
+                    "usuario" => $usuario,
+                    "producto" => $producto,
+                    "unidadFactura" => $unidadFactura,
+                    "ancho" => $ancho,
+                    "calibre" => $calibre,
+                    "fecha" => $fecha,
+                    "metros" => $metros,
+                    "sku" => $sku,
+                    "largo" => $largo,
+                    "tipo" => $tipo,
+                    "idRemisionDet" => $idRemisionDet,
+                    "idUsuario" => $idUsuario,
+                    "cantidad" => $cantidad,
+                    "fecha" => $fecha
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
+
+    function obtenerUltimasDevolucionesProducciones($cantidad)
+    {
+        $query = "SELECT  p.*,cd.idCotizacion,pr.producto,c.calibre,us.nombre usuario,
+        t.tipo,u.unidad unidadFactura,pr.largo,a.ancho,cd.metros,pr.sku,remd.idRemisionDet FROM  devolucionesproducciones p
+        inner join productos pr on pr.idProducto = p.idProducto
+        inner join usuarios us on us.idUsuario = p.idUsuario
+        inner join calibres c on c.idCalibre = pr.idCalibre
+        inner join anchos a on a.idAncho=pr.idAncho
+        inner join unidades u on u.idUnidad=pr.idUnidadFactura
+        inner join tipos t on t.idTipo =pr.idTipo
+        inner join cotizaciondetalle cd on cd.idCotizacionDet = p.idcotizacionDetalle
+        left join remisiondetalle remd on remd.idDevolucionProduccion = p.idDevolucionProduccion
+
+            
+             order by idDevolucionProduccion desc limit " . $cantidad;
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+                extract($row);
+
+
+
+                $registro_item = array(
+                    "idProduccion" => $idDevolucionProduccion,
+                    "tipoProd" => "D",
                     "idCotizacion" => $idCotizacion,
                     "kilos" => $kilos,
                     "usuario" => $usuario,
@@ -1754,17 +2461,14 @@ class CotizacionesModel
     idCotizacion=:idCotizacion,idProducto=:idProducto,cantidad=:cantidad,
     preciounitario=:preciounitario,precioUM=:precioUM
     ,metros=:metros,idUnidad=:idUnidad";
-    $preciounitario=$preciounitario*1.16;
-    $precioUM=$preciounitario;
-    if($metros>0)
-    {
-        $preciounitario= $preciounitario*$metros;
-        $preciounitario= round($preciounitario);
-    }
-    else
-    {
-        $preciounitario= round($preciounitario);
-    }
+        $preciounitario = $preciounitario * 1.16;
+        $precioUM = $preciounitario;
+        if ($metros > 0) {
+            $preciounitario = $preciounitario * $metros;
+            $preciounitario = round($preciounitario);
+        } else {
+            $preciounitario = round($preciounitario);
+        }
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":idCotizacion", $idCotizacion);
@@ -1795,22 +2499,22 @@ class CotizacionesModel
 
         //primero insertamos 
 
-       
-                $query = "update
+
+        $query = "update
                     remisiones
                 SET
                 
                 contenedor=:contenedor,placas=:placas,
                 tipoUnidad=:tipoUnidad,operador=:operador
                 where idRemision=" . $idRemision;
-          
+
 
         $stmt = $this->conn->prepare($query);
 
-       
+
         $stmt->bindParam(":contenedor", $contenedor);
         $stmt->bindParam(":placas", $placas);
-        
+
         $stmt->bindParam(":tipoUnidad", $tipoUnidad);
         $stmt->bindParam(":operador", $operador);
 
