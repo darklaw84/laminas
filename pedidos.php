@@ -18,17 +18,10 @@ if (isset($_GET['entro'])) {
 }
 
 
-if (isset($_GET['idPedido'])) {
-    $idPedido = $_GET['idPedido'];
-    $activo = $_GET['activo'];
-    if ($idPedido != "") {
-        $controller->togglePedido($idPedido, $activo);
-    }
-}
 
 
 
-$respuesta = $controller->obtenerCotizaciones("P", 0);
+$respuesta = $controller->obtenerCotizaciones("P", 0, 0);
 $registros = $respuesta->registros;
 
 
@@ -97,8 +90,12 @@ $clientes = $respClientes->registros;
 
                             $diaS = "";
                             $tieneProducciones = false;
+                            $todasConRemisiones = true;
                             $tieneRemisiones = false;
                             foreach ($reg['productos'] as $prod) {
+                                if (!$prod['todasConRemisiones']) {
+                                    $todasConRemisiones = false;
+                                }
                                 if ($prod['tieneRemision']) {
                                     $tieneRemisiones = true;
                                 }
@@ -108,7 +105,7 @@ $clientes = $respClientes->registros;
                                 }
                             }
 
-                            if (!$tieneRemisiones && $reg['cancelado'] != "1") {
+                            if (!$todasConRemisiones && $reg['cancelado'] != "1") {
 
                                 if ($reg['fechaEntrega'] != "") {
 
@@ -166,22 +163,28 @@ $clientes = $respClientes->registros;
 
 
                                         <?php if (!$tieneProducciones) {
-                                            if (isset($_SESSION['autorizarPedidos']) && $_SESSION['autorizarPedidos'] == "1") { ?><a href="index.php?p=pedidos&idPedido=<?php echo $reg['idCotizacion'] ?>&activo=<?php if ($reg['produccion'] == 1) {
-                                                                                                                                                                                                                        echo "0";
-                                                                                                                                                                                                                    } else {
-                                                                                                                                                                                                                        echo "1";
-                                                                                                                                                                                                                    } ?>" style="font-size: 10px;" <?php if ($reg['produccion'] == 0) {
-                                                                                                                                                                                                                                                        echo "Class='btn btn-primary'";
-                                                                                                                                                                                                                                                    } else {
-                                                                                                                                                                                                                                                        echo "Class='btn btn-danger'";
-                                                                                                                                                                                                                                                    } ?>><?php if ($reg['produccion'] == 0) {
-                                                                                                                                                                                                                                                                echo " Autorizar Producción";
-                                                                                                                                                                                                                                                            } else {
-                                                                                                                                                                                                                                                                echo "Cancelar Producción";
-                                                                                                                                                                                                                                                            } ?></a><?php }
-                                                                                                                                                                                                                                                            } else {
-                                                                                                                                                                                                                                                                echo "Entregado";
-                                                                                                                                                                                                                                                            } ?></td>
+                                            if (isset($_SESSION['autorizarPedidos']) && $_SESSION['autorizarPedidos'] == "1") { ?><a href="#" data-role="autorizarProduccion" data-id="<?php if ($reg['produccion'] == 1) {
+                                                                                                                                                                                            echo $reg['idCotizacion'] . "-1";
+                                                                                                                                                                                        } else {
+                                                                                                                                                                                            echo $reg['idCotizacion'] . "-0";
+                                                                                                                                                                                        } ?>" style="font-size: 10px;" <?php if ($reg['produccion'] == 0) {
+                                                                                                                                                                                                                            echo "Class='btn btn-primary'";
+                                                                                                                                                                                                                        } else {
+                                                                                                                                                                                                                            echo "Class='btn btn-danger'";
+                                                                                                                                                                                                                        } ?>><?php if ($reg['produccion'] == 0) {
+                                                                                                                                                                                                                                    echo " Autorizar Producción";
+                                                                                                                                                                                                                                } else {
+                                                                                                                                                                                                                                    echo "Cancelar Producción";
+                                                                                                                                                                                                                                } ?></a><?php }
+                                                                                                                                                                                                                                } else {
+                                                                                                                                                                                                                                    if ($todasConRemisiones) {
+                                                                                                                                                                                                                                        echo "Entregado";
+                                                                                                                                                                                                                                    } else if ($tieneRemisiones) {
+                                                                                                                                                                                                                                        echo "Parcialmente Entregado";
+                                                                                                                                                                                                                                    } else {
+                                                                                                                                                                                                                                        echo  "Con Producciones";
+                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                } ?></td>
                                     <td><a href="#" title="Alta" data-role="ponerVerde" data-id="<?php echo $reg['idCotizacion'] ?>">
                                             <img class="verde" src="./imagenes/<?php if ($reg['semaforo'] == "V") {
                                                                                     echo "verde";
@@ -250,8 +253,12 @@ $clientes = $respClientes->registros;
 
                             $diaS = "";
                             $tieneProducciones = false;
+                            $todasConRemisiones = true;
                             $tieneRemisiones = false;
                             foreach ($reg['productos'] as $prod) {
+                                if (!$prod['todasConRemisiones']) {
+                                    $todasConRemisiones = false;
+                                }
                                 if ($prod['tieneRemision']) {
                                     $tieneRemisiones = true;
                                 }
@@ -261,11 +268,11 @@ $clientes = $respClientes->registros;
                                 }
                             }
 
-                            if ($tieneRemisiones || $reg['cancelado'] == "1") {
+                            if ($todasConRemisiones || $reg['cancelado'] == "1") {
+
+
 
                                 if ($reg['fechaEntrega'] != "") {
-
-
 
 
 
@@ -298,6 +305,8 @@ $clientes = $respClientes->registros;
                                     }
                                 }
 
+
+
                         ?>
                                 <tr id="<?php echo $reg['idCotizacion']; ?>">
 
@@ -305,7 +314,13 @@ $clientes = $respClientes->registros;
                                     <td><?php echo $reg['idCotizacion'] ?></td>
                                     <td><?php echo strtoupper($reg['cliente']) ?></td>
                                     <td><?php echo strtoupper($reg['usuario']) ?></td>
-                                    <td><?php echo $diaS . " " . $reg['fechaEntrega'] ?></td>
+                                    <td><?php
+                                        if ($todasConRemisiones) {
+                                            echo $reg['ultimaFechaEntrega'];
+                                        } else {
+
+                                            echo $diaS . " " . $reg['fechaEntrega'];
+                                        } ?></td>
                                     <td><?php echo $reg['formapago'] ?></td>
 
                                     <td><?php if ($reg['costoEnvio'] == "") {

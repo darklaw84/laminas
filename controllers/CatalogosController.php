@@ -18,7 +18,7 @@ class CatalogosController
 
     function obtenerProductos()
     {
-        
+
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
@@ -30,7 +30,7 @@ class CatalogosController
 
     function obtenerProductosEntrada()
     {
-        
+
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
@@ -41,9 +41,24 @@ class CatalogosController
     }
 
 
+    function obtenerProductosEntradaConComprometido()
+    {
+
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $contAd = new AdministradorController();
+        $respuesta = $clase->obtenerProductosEntradaConComprometido();
+
+        return $respuesta;
+    }
+
+    
+
+
     function obtenerProductosSalida()
     {
-        
+
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
@@ -57,23 +72,23 @@ class CatalogosController
 
     function obtenerInventario($idProducto)
     {
-        
+
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
-        
+
         $salidas = $clase->obtenerSalidas($idProducto)->registros;
         $recepciones = $clase->obtenerRecepciones($idProducto)->registros;
         $traspasos = $clase->obtenerTraspasos($idProducto)->registros;
 
-        $inventario=array_merge($salidas,$recepciones);
-        $inventario=array_merge($inventario,$traspasos);
+        $inventario = array_merge($salidas, $recepciones);
+        $inventario = array_merge($inventario, $traspasos);
 
         return $inventario;
     }
 
 
-  
+
 
     function obtenerUnidades()
     {
@@ -85,31 +100,85 @@ class CatalogosController
         return $respuesta;
     }
 
-   
-    function agregarProducto($producto,$idCalibre,$idTipo,
-    $idUnidad,$pesoTeorico,$precioGen,$precioRev,$sku,$idAncho,$largo,$idUnidadFactura,
-    $chkSalida,
-    $chkEntrada,$medidas)
-    {
+
+    function agregarProducto(
+        $producto,
+        $idCalibre,
+        $idTipo,
+        $idUnidad,
+        $pesoTeorico,
+        $precioGen,
+        $precioRev,
+        $sku,
+        $idAncho,
+        $largo,
+        $idUnidadFactura,
+        $chkSalida,
+        $chkEntrada,
+        $medidas,
+        $idMateriaPrima
+    ) {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
-        $respuesta = $clase->agregarProducto($producto,$idCalibre,$idTipo
-        ,$idUnidad,$pesoTeorico,$precioGen,$precioRev,$sku,$idAncho,$largo,$idUnidadFactura,
-        $chkSalida,
-        $chkEntrada,$medidas);
+        $respuesta = $clase->agregarProducto(
+            $producto,
+            $idCalibre,
+            $idTipo,
+            $idUnidad,
+            $pesoTeorico,
+            $precioGen,
+            $precioRev,
+            $sku,
+            $idAncho,
+            $largo,
+            $idUnidadFactura,
+            $chkSalida,
+            $chkEntrada,
+            $medidas,
+            $idMateriaPrima
+        );
         return $respuesta;
     }
 
 
-    function actualizarProducto($producto, $idProducto,$idCalibre,$idTipo,
-    $idUnidad,$pesoTeorico,$precioGen,$precioRev,$idAncho,$largo,$idUnidadFactura,$entrada,$salida,$medidasreves)
-    {
+    function actualizarProducto(
+        $producto,
+        $idProducto,
+        $idCalibre,
+        $idTipo,
+        $idUnidad,
+        $pesoTeorico,
+        $precioGen,
+        $precioRev,
+        $idAncho,
+        $largo,
+        $idUnidadFactura,
+        $entrada,
+        $salida,
+        $medidasreves,
+        $idMateriaPrima
+    ) {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
-        $respuesta = $clase->actualizarProducto($producto, $idProducto,
-        $idCalibre,$idTipo,$idUnidad,$pesoTeorico,$precioGen,$precioRev,$idAncho,$largo,$idUnidadFactura,$entrada,$salida,$medidasreves);
+        $respuesta = $clase->actualizarProducto(
+            $producto,
+            $idProducto,
+            $idCalibre,
+            $idTipo,
+            $idUnidad,
+            $pesoTeorico,
+            $precioGen,
+            $precioRev,
+            $idAncho,
+            $largo,
+            $idUnidadFactura,
+            $entrada,
+            $salida,
+            $medidasreves,
+            $idMateriaPrima
+        );
         return $respuesta;
     }
 
@@ -128,32 +197,47 @@ class CatalogosController
 
 
 
-    function actualizarCliente($cliente, $idCliente, $clave,$direccion,$representante,$telefono,
-    $mail,
-    $tipoprecio,
-    $comentarios,
-    $idUso,
-    $direccionentrega,$idVendedor)
-    {
-        $database = new Database();
-        $db = $database->getConnection();
-        $clase = new CatalogosModel($db);
-        $respuesta = $clase->actualizarCliente($cliente, $idCliente, $clave,$direccion,$representante,$telefono,
+    function actualizarCliente(
+        $cliente,
+        $idCliente,
+        $clave,
+        $direccion,
+        $representante,
+        $telefono,
         $mail,
         $tipoprecio,
         $comentarios,
         $idUso,
-        $direccionentrega,$idVendedor);
+        $direccionentrega,
+        $idVendedor
+    ) {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->actualizarCliente(
+            $cliente,
+            $idCliente,
+            $clave,
+            $direccion,
+            $representante,
+            $telefono,
+            $mail,
+            $tipoprecio,
+            $comentarios,
+            $idUso,
+            $direccionentrega,
+            $idVendedor
+        );
         return $respuesta;
     }
 
 
-    function agregarCliente($cliente, $rfc,$direccion,$representante,$telefono,$mail,$tipoprecio,$comentarios,$idUso,$direccionentrega,$idVendedor)
+    function agregarCliente($cliente, $rfc, $direccion, $representante, $telefono, $mail, $tipoprecio, $comentarios, $idUso, $direccionentrega, $idVendedor)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
-        $respuesta = $clase->agregarCliente($cliente, $rfc,$direccion,$representante,$telefono,$mail,$tipoprecio,$comentarios,$idUso,$direccionentrega,$idVendedor);
+        $respuesta = $clase->agregarCliente($cliente, $rfc, $direccion, $representante, $telefono, $mail, $tipoprecio, $comentarios, $idUso, $direccionentrega, $idVendedor);
         return $respuesta;
     }
 
@@ -176,6 +260,15 @@ class CatalogosController
         return $respuesta;
     }
 
+    function eliminarProducto($idProducto)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->eliminarProducto($idProducto);
+        return $respuesta;
+    }
+
 
     function actualizarChofer($chofer, $idChofer)
     {
@@ -187,12 +280,12 @@ class CatalogosController
     }
 
 
-    function actualizarCamion($camion,$placas, $idCamion)
+    function actualizarCamion($camion, $placas, $idCamion)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
-        $respuesta = $clase->actualizarCamion($camion,$placas, $idCamion);
+        $respuesta = $clase->actualizarCamion($camion, $placas, $idCamion);
         return $respuesta;
     }
 
@@ -237,12 +330,12 @@ class CatalogosController
     }
 
 
-    function agregarCamion($camion,$placas)
+    function agregarCamion($camion, $placas)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
-        $respuesta = $clase->agregarCamion($camion,$placas);
+        $respuesta = $clase->agregarCamion($camion, $placas);
         return $respuesta;
     }
 
@@ -459,24 +552,24 @@ class CatalogosController
     }
 
 
-    
 
-    function actualizarProveedor($proveedor, $idProveedor,$telefono,$comentarios,$rfc,$direccion)
+
+    function actualizarProveedor($proveedor, $idProveedor, $telefono, $comentarios, $rfc, $direccion)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
-        $respuesta = $clase->actualizarProveedor($proveedor, $idProveedor,$telefono,$comentarios,$rfc,$direccion);
+        $respuesta = $clase->actualizarProveedor($proveedor, $idProveedor, $telefono, $comentarios, $rfc, $direccion);
         return $respuesta;
     }
 
 
-    function agregarProveedor($proveedor,$telefono,$comentarios,$rfc,$direccion)
+    function agregarProveedor($proveedor, $telefono, $comentarios, $rfc, $direccion)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
-        $respuesta = $clase->agregarProveedor($proveedor,$telefono,$comentarios,$rfc,$direccion);
+        $respuesta = $clase->agregarProveedor($proveedor, $telefono, $comentarios, $rfc, $direccion);
         return $respuesta;
     }
 
@@ -507,6 +600,4 @@ class CatalogosController
         $respuesta = $clase->toggleProducto($idProducto, $activo);
         return $respuesta;
     }
-
-
 }

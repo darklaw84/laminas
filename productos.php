@@ -27,6 +27,7 @@ if ($entro != "") {
     $idUnidadFactura = $_POST['idUnidadFactura'];
     $largo = $_POST['largo'];
     $idAncho = $_POST['idAncho'];
+    $idMateriaPrima = $_POST['idMateriaPrima'];
     $precioGen = $_POST['precioGen'];
     $precioRev = $_POST['precioRev'];
 
@@ -75,7 +76,7 @@ if ($entro != "") {
                     $idUnidadFactura,
                     $chkSalida,
                     $chkEntrada,
-                    isset($_POST['medidas'])
+                    isset($_POST['medidas']),$idMateriaPrima
                 );
 
                 if (!$respuesta->exito) {
@@ -124,6 +125,11 @@ $unidades = $res->registros;
 
 $res = $controller->obtenerAnchos(true);
 $anchos = $res->registros;
+
+
+
+$respuesta = $controller->obtenerProductosEntrada();
+$productosEntrada = $respuesta->registros;
 
 
 
@@ -215,6 +221,7 @@ $anchos = $res->registros;
                                         </select>
                                     </div>
                                 </div>
+                                
 
                             </div>
 
@@ -301,6 +308,21 @@ $anchos = $res->registros;
                                                                                                 } ?>>
                                     </div>
                                 </div>
+                                <div class="col-6 col-md-4">
+                                    <label for="idCalibre">Materia Prima</label>
+                                    <div>
+                                        <select class=" form-control " name="idMateriaPrima">
+                                            <option value="0" >N/A</option>
+                                            <?php
+                                            if (isset($productosEntrada)) {
+                                                foreach ($productosEntrada as $ins) {
+                                                    echo '<option value="' . $ins['idProducto'] . '" >' .
+                                                    strtoupper($ins['sku'] . " - " . $ins['producto'] . " - " . $ins['ancho'] . " - " . $ins['calibre'] . " - " . $ins['tipo']) . '</option>';
+                                                }
+                                            } ?>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="col-4 col-md-2">
                                     <label for="medidas">Medidas al revés</label>
                                     <div>
@@ -370,7 +392,7 @@ $anchos = $res->registros;
                             
                            
                             <th>Uni Fac</th>
-
+                        <th>X</th>
 
                         </tr>
                     </thead>
@@ -410,6 +432,7 @@ $anchos = $res->registros;
                                     <input class="entrada" type="hidden" value="<?php echo $reg['entrada'] ?>">
                                     <input class="medidasreves" type="hidden" value="<?php echo $reg['medidasreves'] ?>">
                                     <input class="salida" type="hidden" value="<?php echo $reg['salida'] ?>">
+                                    <input class="idMateriaPrima" type="hidden" value="<?php echo $reg['idMateriaPrima'] ?>">
                                     <input class="idUnidad" type="hidden" value="<?php echo $reg['idUnidad'] ?>">
                                     <input class="idUnidadFactura" type="hidden" value="<?php echo $reg['idUnidadFactura'] ?>"><a href="index.php?p=productos&idProducto=<?php echo $reg['idProducto'] ?>&activo=<?php if ($reg['activo'] == 1) {
                                                                                                                                                                                                                         echo "0";
@@ -424,6 +447,7 @@ $anchos = $res->registros;
                                 
                               
                                 <td data-target="unidadFactura"><?php echo strtoupper($reg['unidadFactura']) ?></td>
+                                <td> <a href="#" class="btn btn-primary" data-role="eliminarProducto" data-id="<?php echo $reg['idProducto'] ?>">X</a></td>
                             </tr>
                         <?php } ?>
 

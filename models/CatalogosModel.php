@@ -57,6 +57,7 @@ class CatalogosModel
                     "idTipo" => $idTipo,
                     "idUnidad" => $idUnidad,
                     "unidad" => $unidad,
+                    "idMateriaPrima" => $idMateriaPrima,
                     "medidasreves" => $medidasreves,
                     "idAncho" => $idAncho,
                     "producto" => $producto,
@@ -92,6 +93,188 @@ class CatalogosModel
     }
 
 
+    function validarProductoUsado($idProducto)
+    {
+        $estaUsado = false;
+
+        $query = "select * from ordenescompradetalle where idProducto = " . $idProducto;
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute();
+        $num = $stmt->rowCount();
+
+
+        if ($num > 0) {
+
+            $estaUsado = true;
+
+            return $estaUsado;
+        }
+
+
+
+        $query = "select * from cotizaciondetalle where idProducto = " . $idProducto;
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute();
+        $num = $stmt->rowCount();
+
+
+        if ($num > 0) {
+
+            $estaUsado = true;
+
+            return $estaUsado;
+        }
+
+
+
+        return $estaUsado;
+    }
+
+    
+
+
+
+    function obtenerProductosEntradaConComprometido()
+    {
+
+
+        $query = "SELECT  p.*,c.calibre,t.tipo,u.unidad,a.ancho,uf.unidad unidadFactura FROM  productos p
+            inner join calibres c on c.idCalibre=p.idCalibre
+            inner join tipos t on t.idTipo=p.idTipo
+            inner join anchos a on a.idAncho = p.idAncho
+            inner join unidades u on u.idUnidad=p.idUnidad
+            inner join unidades uf on uf.idUnidad=p.idUnidadFactura
+            where p.entrada=1 and p.activo =1
+
+                order by sku ";
+
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // extract row
+                // this will make $row['name'] to
+                // just $name only
+                extract($row);
+
+
+               $respuesta= $this->obtenerInventarioComprometido($idProducto);
+
+               $comprometido=0;
+               $unidadComp="";
+               if($respuesta->exito)
+               {
+                   $comprometido=$respuesta->registros['cantidad'];
+                   $unidadComp=$respuesta->registros['unidad'];
+               }
+
+                $registro_item = array(
+                    "idProducto" => $idProducto,
+                    "idCalibre" => $idCalibre,
+                    "comprometido" => $comprometido,
+                    "unidadComp" => $unidadComp,
+                    "idTipo" => $idTipo,
+                    "idUnidad" => $idUnidad,
+                    "unidad" => $unidad,
+                    "idAncho" => $idAncho,
+                    "producto" => $producto,
+                    "largo" => $largo,
+                    "unidadFactura" => $unidadFactura,
+                    "idUnidadFactura" => $idUnidadFactura,
+                    "sku" => $sku,
+                    "ancho" => $ancho,
+                    "entrada" => $entrada,
+                    "salida" => $salida,
+                    "calibre" => $calibre,
+                    "pesoTeorico" => $pesoTeorico,
+                    "tipo" => $tipo,
+                    "invkilospiezas" => $invkilospiezas,
+                    "precioGen" => $precioGen,
+                    "precioRev" => $precioRev,
+                    "activo" => $activo
+
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+    function obtenerInventarioComprometido($idProducto)
+    {
+
+
+        $query = "
+        select cd.cantidad,cd.idUnidad,uni.unidad from cotizaciondetalle cd 
+        inner join unidades uni on uni.idUnidad=cd.idUnidad
+         where cd.idProducto in (
+        select idProducto from productos where idMateriaPrima= ".$idProducto.")
+         and idCotizacionDet not in (select idCotizacionDetalle from producciones)";
+
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $cantidadComprometida=0;
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                extract($row);
+                $cantidadComprometida = $cantidadComprometida+$cantidad;
+                $unidadMostrar=$unidad;
+                $idUnidadMost=$idUnidad;
+            }
+            $registro_item = array(
+                "cantidad" => $cantidadComprometida,
+                "idUnidad" => $idUnidadMost,
+                "unidad" => $unidadMostrar
+            );
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $registro_item;
+        } else {
+            
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
+
 
     function obtenerProductosEntrada()
     {
@@ -103,7 +286,7 @@ class CatalogosModel
             inner join anchos a on a.idAncho = p.idAncho
             inner join unidades u on u.idUnidad=p.idUnidad
             inner join unidades uf on uf.idUnidad=p.idUnidadFactura
-            where p.entrada=1
+            where p.entrada=1 and p.activo =1
 
                 order by sku ";
 
@@ -1329,6 +1512,69 @@ class CatalogosModel
                     "idUnidad" => $idUnidad,
                     "entrada" => $entrada,
                     "salida" => $salida,
+                    "idMateriaPrima" => $idMateriaPrima,
+                    "largo" => $largo,
+                    "idUnidadFactura" => $idUnidadFactura,
+                    "precioGen" => $precioGen,
+                    "precioRev" => $precioRev,
+                    "pesoTeorico" => $pesoTeorico,
+                    "activo" => $activo
+
+
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
+    function obtenerProductoPORsku($sku)
+    {
+
+
+        $query = "SELECT  * FROM  productos 
+                where sku='" . $sku . "'";
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // extract row
+                // this will make $row['name'] to
+                // just $name only
+                extract($row);
+
+
+
+                $registro_item = array(
+                    "idProducto" => $idProducto,
+                    "producto" => $producto,
+                    "idCalibre" => $idCalibre,
+                    "idTipo" => $idTipo,
+                    "idUnidad" => $idUnidad,
+                    "entrada" => $entrada,
+                    "salida" => $salida,
                     "largo" => $largo,
                     "idUnidadFactura" => $idUnidadFactura,
                     "precioGen" => $precioGen,
@@ -1421,70 +1667,82 @@ class CatalogosModel
         $idUnidadFactura,
         $chkSalida,
         $chkEntrada,
-        $medidas
+        $medidas,$idMateriaPrima
     ) {
 
         $respuesta = new RespuestaBD();
 
 
-        $query = "INSERT INTO
+        $productos = $this->obtenerProductoPORsku($sku)->registros;
+        if (count($productos) > 0) {
+            $respuesta->exito = false;
+            $respuesta->mensaje = "ya existe un producto con el mismo SKU, favor de validar";
+            return $respuesta;
+        } else {
+
+
+
+            $query = "INSERT INTO
                     productos
                 SET
                 producto=:producto,idCalibre=:idCalibre,sku=:sku,idAncho=:idAncho,
                 precioGen=:precioGen,precioRev=:precioRev,largo=:largo,idUnidadFactura=:idUnidadFactura,
-                salida=:chkSalida,entrada=:chkEntrada,medidasreves=:medidas,
+                salida=:chkSalida,entrada=:chkEntrada,medidasreves=:medidas,idMateriaPrima=:idMateriaPrima,
                 pesoTeorico=:pesoTeorico,idTipo=:idTipo,idUnidad=:idUnidad,activo='1'";
 
 
-        // prepare query
-        $stmt = $this->conn->prepare($query);
+            // prepare query
+            $stmt = $this->conn->prepare($query);
 
-        // sanitize
-        $producto = htmlspecialchars(strip_tags($producto));
+            // sanitize
+            $producto = htmlspecialchars(strip_tags($producto));
 
-        if ($medidas) {
-            $medidas = 1;
-        } else {
-            $medidas = 0;
-        }
+            if ($medidas) {
+                $medidas = 1;
+            } else {
+                $medidas = 0;
+            }
 
-        // bind values
-        $stmt->bindParam(":precioRev", $precioRev);
-        $stmt->bindParam(":precioGen", $precioGen);
-        $stmt->bindParam(":sku", $sku);
-        $stmt->bindParam(":producto", $producto);
-        $stmt->bindParam(":idCalibre", $idCalibre);
-        $stmt->bindParam(":idAncho", $idAncho);
+            // bind values
+            $stmt->bindParam(":precioRev", $precioRev);
+            $stmt->bindParam(":precioGen", $precioGen);
+            $stmt->bindParam(":sku", $sku);
+            $stmt->bindParam(":producto", $producto);
+            $stmt->bindParam(":idCalibre", $idCalibre);
+            $stmt->bindParam(":idAncho", $idAncho);
 
-        $stmt->bindParam(":idTipo", $idTipo);
-        $stmt->bindParam(":idUnidad", $idUnidad);
-        $stmt->bindParam(":largo", $largo);
-        $stmt->bindParam(":medidas", $medidas);
-        $stmt->bindParam(":idUnidadFactura", $idUnidadFactura);
-        $stmt->bindParam(":pesoTeorico", $pesoTeorico);
-        $stmt->bindParam(":chkSalida", $chkSalida);
-        $stmt->bindParam(":chkEntrada", $chkEntrada);
-
-
+            $stmt->bindParam(":idTipo", $idTipo);
+            $stmt->bindParam(":idUnidad", $idUnidad);
+            $stmt->bindParam(":largo", $largo);
+            $stmt->bindParam(":medidas", $medidas);
+            $stmt->bindParam(":idUnidadFactura", $idUnidadFactura);
+            $stmt->bindParam(":pesoTeorico", $pesoTeorico);
+            $stmt->bindParam(":chkSalida", $chkSalida);
+            $stmt->bindParam(":chkEntrada", $chkEntrada);
 
 
-        // execute query
-        if ($stmt->execute()) {
-            $idInsertado = $this->conn->lastInsertId();
-            $respuesta->exito = true;
-            $respuesta->mensaje = "";
-            $respuesta->valor = $idInsertado;
-            return $respuesta;
-        } else {
-            $respuesta->exito = false;
-            $mensaje = $stmt->errorInfo();
-            $respuesta->mensaje = "Ocurrió un problema actualizando";
-            return $respuesta;
+
+
+            // execute query
+            if ($stmt->execute()) {
+                $idInsertado = $this->conn->lastInsertId();
+                $respuesta->exito = true;
+                $respuesta->mensaje = "";
+                $respuesta->valor = $idInsertado;
+                return $respuesta;
+            } else {
+                $respuesta->exito = false;
+                $mensaje = $stmt->errorInfo();
+                $respuesta->mensaje = "Ocurrió un problema actualizando";
+                return $respuesta;
+            }
         }
     }
 
 
-    function agregarCliente($cliente, $rfc, $direccion, $representante, $telefono, $mail, $tipoprecio, $comentarios, $idUso, $direccionentrega,$idVendedor)
+
+
+    function agregarCliente($cliente, $rfc, $direccion, $representante, $telefono, $mail, $tipoprecio, $comentarios, $idUso, $direccionentrega, $idVendedor)
     {
 
         $respuesta = new RespuestaBD();
@@ -1853,7 +2111,8 @@ class CatalogosModel
         $largo,
         $idUnidadFactura,
         $entrada,
-        $salida,$medidasreves
+        $salida,
+        $medidasreves,$idMateriaPrima
     ) {
 
         $respuesta = new RespuestaBD();
@@ -1870,7 +2129,8 @@ class CatalogosModel
                 precioGen=:precioGen,precioRev=:precioRev,idAncho=:idAncho,
                 largo=:largo,idUnidadFactura=:idUnidadFactura,
                 entrada=:entrada,salida=:salida,medidasreves=:medidasreves,
-                idTipo=:idTipo,idUnidad=:idUnidad,pesoTeorico=:pesoTeorico
+                idTipo=:idTipo,idUnidad=:idUnidad,pesoTeorico=:pesoTeorico,
+                idMateriaPrima=:idMateriaPrima
                  where idProducto=" . $idProducto;
 
 
@@ -1889,13 +2149,14 @@ class CatalogosModel
         $stmt->bindParam(":idAncho", $idAncho);
         $stmt->bindParam(":idUnidad", $idUnidad);
         $stmt->bindParam(":salida", $salida);
+        $stmt->bindParam(":idMateriaPrima", $idMateriaPrima);
         $stmt->bindParam(":entrada", $entrada);
         $stmt->bindParam(":pesoTeorico", $pesoTeorico);
         $stmt->bindParam(":largo", $largo);
         $stmt->bindParam(":idUnidadFactura", $idUnidadFactura);
         $stmt->bindParam(":medidasreves", $medidasreves);
 
-        
+
 
 
 
@@ -1936,7 +2197,8 @@ class CatalogosModel
         $tipoprecio,
         $comentarios,
         $idUso,
-        $direccionentrega,$idVendedor
+        $direccionentrega,
+        $idVendedor
     ) {
 
         $respuesta = new RespuestaBD();
@@ -2090,6 +2352,32 @@ class CatalogosModel
             $respuesta->exito = false;
             $mensaje = $stmt->errorInfo();
             $respuesta->mensaje = "Ocurrió un problema actualizando";
+            return $respuesta;
+        }
+    }
+
+
+
+    function eliminarProducto($idProducto)
+    {
+
+        $respuesta = new RespuestaBD();
+
+        $estaUsado = $this->validarProductoUsado($idProducto);
+
+        if (!$estaUsado) {
+
+            $query = "delete from productos where idProducto =" . $idProducto;
+            $stmt = $this->conn->prepare($query);
+
+            $stmt->execute();
+
+            $respuesta->exito = true;
+            $respuesta->mensaje = "";
+            return $respuesta;
+        } else {
+            $respuesta->exito = false;
+            $respuesta->mensaje = "El producto ya esta siendo usado ";
             return $respuesta;
         }
     }

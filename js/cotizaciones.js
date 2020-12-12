@@ -249,6 +249,91 @@ $(document).ready(function () {
     });
 
 
+    $('#costoEnvioPed').blur(function () {
+        var costoEnvio = $('#costoEnvioPed').val();
+        var idCotizacion = $('#idCotizacionMobil').val();
+
+        if (costoEnvio >= 0) {
+
+
+
+            $.ajax({
+                url: 'actualizarCostoEnvio.php',
+                type: 'post',
+                data: {
+                    costo: costoEnvio,
+                    id: idCotizacion
+                },
+                dataType: 'json',
+                success: function (response) {
+
+                    window.location = 'index.php?p=pedidosact&idCotizacion=' + idCotizacion;
+
+
+                }
+            });
+        }
+        else {
+            $('#modalMensajeError').find('.modal-body').text('El valor del costo del envío debe de ser numérico, para poderlo almacenar').end().modal('show');
+        }
+    });
+
+    $(document).on('click', 'a[data-role=autorizarProduccion]', function () {
+        var id = $(this).data('id');
+
+        var valores = id.split("-");
+
+        if (valores[1] == "1") {
+            // queire decir que ya esta autorizado y lo quieren cancelar 
+
+            $.ajax({
+                url: 'autorizarPedido.php',
+                type: 'post',
+                data: {
+                    id: valores[0],
+                    activo: '0',
+                    numAlmacen: 0
+
+                },
+                dataType: 'json',
+                complete: function () {
+                    window.location = 'index.php?p=pedidos'
+                }
+            });
+        }
+        else {
+            // quiere decir que no esta autorizado y tenemos que mostrar el pop up con los almacenes
+            $('#idCotizacionAutorizarProduccion').val(valores[0]);
+            $('#modalAutorizarProduccion').modal('show');
+        }
+
+
+    });
+
+    $('#autorizarProduccion').click(function () {
+
+        var idCotizacion = $('#idCotizacionAutorizarProduccion').val();
+        var numAlmacen = $('#numAlmacenProd').val();
+
+
+        $.ajax({
+            url: 'autorizarPedido.php',
+            type: 'post',
+            data: {
+                id: idCotizacion,
+                activo: '1',
+                numAlmacen: numAlmacen
+
+            },
+            dataType: 'json',
+            complete: function () {
+                window.location = 'index.php?p=pedidos'
+            }
+        });
+
+
+
+    });
 
 
     $('#guardarExtras').click(function () {

@@ -167,7 +167,7 @@ foreach ($productosOrden as $reg) {
     }
     $descripcion = strtoupper($reg['producto'] . " " . $largo . " " . $reg['ancho'] . " " . $reg['calibre'] . " " . $reg['tipo']);
     $descripcion = str_replace("N/A", "", $descripcion);
-    $descripcion = str_replace('&quot;', '"', $descripcion);
+    $descripcion = str_replace('&QUOT;', '"', $descripcion);
     $pdf->Cell(160, $altodetalle, utf8_decode($descripcion), $bor, 0, 'C', true);
 
 
@@ -259,6 +259,7 @@ $alto = 4;
 $alto2 = 3;
 
 
+$pdf->Image('./imagenes/datosfacturacion.jpg', 220, 160, 70, 30);
 
 
 

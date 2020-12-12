@@ -739,7 +739,7 @@ $tc = $resTC->valor;
 
     $respuesta = $contAd->obtenerAdministradores();
     $vendedores = $respuesta->registros;
-    
+
 
 
     ?>
@@ -869,7 +869,7 @@ $tc = $resTC->valor;
                                     <div>
                                         <select class=" form-control " name="idChoferCP" id="idChoferCP">
                                             <?php
-                                            if (isset($formas)) {
+                                            if (isset($choferes)) {
                                                 foreach ($choferes as $uni) {
                                                     echo '<option value="' . $uni['idChofer'] . '" >' .
                                                         strtoupper($uni['chofer']) . '</option>';
@@ -921,7 +921,7 @@ $tc = $resTC->valor;
 
                     <div class="card-body">
                         <div class="form-group">
-                        <label > ¿Esta seguro que desea cancelar el pedido?</label>
+                            <label> ¿Esta seguro que desea cancelar el pedido?</label>
 
                         </div>
 
@@ -953,7 +953,7 @@ $tc = $resTC->valor;
 
                     <div class="card-body">
                         <div class="form-group">
-                        <label > ¿Esta seguro que desea cancelar la remisión?</label>
+                            <label> ¿Esta seguro que desea cancelar la remisión?</label>
 
                         </div>
 
@@ -970,6 +970,92 @@ $tc = $resTC->valor;
         </div>
     </div>
 
+
+    <div id="modalAutorizarProduccion" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Autorizar Producción</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col-md-12">
+                                    <label for="tipoUnidadM">¿En que almacen se debe realizar la producción?</label>
+
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="clave">Almacen</label>
+                                    <div>
+                                        <select class=" form-control " id="numAlmacenProd" name="numAlmacenProd">
+                                            <option value="1">Almacen 1</option>
+                                            <option value="2">Almacen 2</option>
+
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+                        <input type="hidden" id="idCotizacionAutorizarProduccion" />
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="autorizarProduccion" class="btn btn-primary pull-right">Autorizar Producción</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modalEliminarProducto" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Eliminar Producto</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col-md-12">
+                                    <label for="tipoUnidadM">¿Esta seguro que desea eliminar el producto?</label>
+
+                                </div>
+
+
+
+                            </div>
+
+                        </div>
+
+
+                        <input type="hidden" id="idProductoEliminar" />
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" id="eliminarProducto" class="btn btn-primary pull-right">Eliminar Producto</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <div id="modalAbono" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
@@ -1045,6 +1131,20 @@ $tc = $resTC->valor;
                                     <div>
                                         <select class=" form-control " id="idAlmacenTraspaso">
 
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="tipoUnidadM">Chofer</label>
+                                    <div>
+                                        <select class=" form-control " name="idChoferCP" id="idChoferTraspaso">
+                                            <?php
+                                            if (isset($choferes)) {
+                                                foreach ($choferes as $uni) {
+                                                    echo '<option value="' . $uni['idChofer'] . '" >' .
+                                                        strtoupper($uni['chofer']) . '</option>';
+                                                }
+                                            } ?>
                                         </select>
                                     </div>
                                 </div>
@@ -1166,19 +1266,19 @@ $tc = $resTC->valor;
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                    <label for="clave">Vendedor</label>
-                                    <div>
+                                <label for="clave">Vendedor</label>
+                                <div>
                                     <select class=" form-control " id="idVendedorM" name="idVendedorM">
-                                            <?php
-                                            if (isset($vendedores)) {
-                                                foreach ($vendedores as $uni) {
-                                                    echo '<option value="' . $uni['idUsuario'] . '" >' .
-                                                        strtoupper($uni['nombre']." ".$uni['apellidos']) . '</option>';
-                                                }
-                                            } ?>
-                                        </select>
-                                     </div>
+                                        <?php
+                                        if (isset($vendedores)) {
+                                            foreach ($vendedores as $uni) {
+                                                echo '<option value="' . $uni['idUsuario'] . '" >' .
+                                                    strtoupper($uni['nombre'] . " " . $uni['apellidos']) . '</option>';
+                                            }
+                                        } ?>
+                                    </select>
                                 </div>
+                            </div>
 
 
 
@@ -1590,6 +1690,12 @@ $tc = $resTC->valor;
     $res = $catCon->obtenerAnchos(true);
     $anchos = $res->registros;
 
+
+    $respuesta = $catCon->obtenerProductosEntrada();
+    $productosEntrada = $respuesta->registros;
+
+
+
     ?>
 
     <div id="modalProductosUpdate" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
@@ -1730,10 +1836,26 @@ $tc = $resTC->valor;
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <label for="idCalibre">Materia Prima</label>
+                                    <div>
+                                        <select class=" form-control " id="idMateriaPrimaM">
+                                            <option value="0">N/A</option>
+                                            <?php
+                                            if (isset($productosEntrada)) {
+                                                foreach ($productosEntrada as $ins) {
+                                                    echo '<option value="' . $ins['idProducto'] . '" >' .
+                                                        strtoupper($ins['sku'] . " - " . $ins['producto'] . " - " . $ins['ancho'] . " - " . $ins['calibre'] . " - " . $ins['tipo']) . '</option>';
+                                                }
+                                            } ?>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div id="formFactorM" class="form-group">
                             <div class="form-row">
+                               
                                 <div class="col-md-6">
                                     <label for="idCalibre">Peso Teórico</label>
                                     <div>

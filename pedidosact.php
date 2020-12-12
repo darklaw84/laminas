@@ -124,7 +124,7 @@ if (isset($idCotizacion)) {
                                 </div>
 
 
-                                <div class="col-md-5">
+                                <div class="col-md-4">
                                     <label for="proveedor">Cliente</label>
                                     <div>
                                         <input type="text" id="proveedor" disabled size="50" class="form-control" value="<?php if (isset($cliente)) {
@@ -133,6 +133,16 @@ if (isset($idCotizacion)) {
 
                                     </div>
                                 </div>
+                                <div class="col-md-2">
+                                        <label for="cantKit">Costo Envio</label>
+                                        <div>
+                                            <input type="number" maxlength="10" step="0.01" class="form-control" id="costoEnvioPed" name="costoEnvioPed" value="<?php if (isset($costoEnvio)) {
+
+                                                                                                                                                                echo $costoEnvio;
+                                                                                                                                                            } ?>" />
+
+                                        </div>
+                                    </div>
                                 <div class="col-md-2">
                                     <label for="proveedor">&nbsp;</label>
                                     <div class="row">
@@ -151,7 +161,7 @@ if (isset($idCotizacion)) {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <label for="psc">Subtotal</label>

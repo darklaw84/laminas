@@ -145,13 +145,15 @@ $(document).ready(function () {
         var id = $('#idRecepcionM').val();
         var idProd = $('#idProd').val();
         var idAlmacenTraspaso = $('#idAlmacenTraspaso').val();
+        var idChofer = $('#idChoferTraspaso').val();
 
         $.ajax({
             url: 'realizarTraspaso.php',
             type: 'post',
             data: {
                 id: id,
-                idAlmacenTraspaso: idAlmacenTraspaso
+                idAlmacenTraspaso: idAlmacenTraspaso,
+                idChofer:idChofer
             },
             dataType: 'json',
             success: function (almacenes) {

@@ -20,7 +20,7 @@ class CotizacionesModel
     }
 
 
-    function obtenerCotizaciones($tipo, $idUsuario)
+    function obtenerCotizaciones($tipo, $idUsuario,$numAlmacen)
     {
         if ($tipo == "C") {
             $query = "SELECT  co.*,cl.cliente,fp.formapago FROM  cotizaciones co
@@ -33,11 +33,17 @@ class CotizacionesModel
             left join formaspago fp on fp.idFormaPago = co.idFormaPago
             where pedido=1
               order by fecha desc ";
-        } else if ($tipo == "PR" || $tipo == "PS") {
+        } else if ($tipo == "PR") {
             $query = "SELECT  co.*,cl.cliente,fp.formapago FROM  cotizaciones co
             inner join clientes cl on co.idCliente = cl.idCliente
             left join formaspago fp on fp.idFormaPago = co.idFormaPago
-            where pedido=1 and produccion = 1 
+            where pedido=1 and produccion = 1 and cancelado is null  and numAlmacen = ".$numAlmacen."
+              order by fecha desc ";
+        }else if ( $tipo == "PS") {
+            $query = "SELECT  co.*,cl.cliente,fp.formapago FROM  cotizaciones co
+            inner join clientes cl on co.idCliente = cl.idCliente
+            left join formaspago fp on fp.idFormaPago = co.idFormaPago
+            where pedido=1 and produccion = 1  
               order by fecha desc ";
         } else if ($tipo == "PE") {
             $query = "SELECT  co.*,cl.cliente,fp.formapago FROM  cotizaciones co
@@ -67,6 +73,8 @@ class CotizacionesModel
                 $detalle = $this->obtenerDetalleCotizacion($idCotizacion);
 
                 $abonos = $this->obtenerAbonosCotizacion($idCotizacion)->registros;
+
+                $ultimaFechaEntrega= $this->obtenerUltimaFechaDeEntrega($idCotizacion)->valor;
 
                 $totalAbonos = 0;
                 $pedidoPagado = false;
@@ -114,6 +122,7 @@ class CotizacionesModel
                     "cliente" => $cliente,
                     "cancelado" => $cancelado,
                     "condiciones" => $condiciones,
+                    "ultimaFechaEntrega" => $ultimaFechaEntrega,
                     "vigencia" => $vigencia,
                     "formapago" => $formapago,
                     "pedidoPagado" => $pedidoPagado,
@@ -221,10 +230,11 @@ class CotizacionesModel
     function obtenerRemision($idRemision)
     {
 
-        $query = "SELECT  r.idRemision,r.idUsuario,r.fecha,r.tipoUnidad,r.contenedor
-        ,ch.chofer,ca.camion,ca.placas,r.idPedido,r.usuario FROM  remisiones r
+        $query = "SELECT  r.idRemision,r.idUsuario,r.fecha,r.tipoUnidad,r.contenedor,coti.usuario vendedor
+        ,ch.chofer,ca.camion,ca.placas,ca.camion,r.idPedido,r.usuario FROM  remisiones r
             left join choferes ch on ch.idChofer=r.operador
             left join camiones ca on ca.idCamion = r.placas
+            inner join cotizaciones coti on coti.idCotizacion = r.idPedido
             where idRemision = " . $idRemision . "
               ";
 
@@ -255,11 +265,13 @@ class CotizacionesModel
                     "idUsuario" => $idUsuario,
                     "fecha" => $fecha,
                     "operador" => $chofer,
+                    "camion" => $camion,
                     "tipoUnidad" => $tipoUnidad,
                     "placas" => $placas,
                     "contenedor" => $contenedor,
                     "detalle" => $detalle,
                     "idPedido" => $idPedido,
+                    "vendedor" => $vendedor,
                     "usuario" => $usuario
 
                 );
@@ -541,7 +553,7 @@ class CotizacionesModel
     }
 
 
-    function togglePedido($idPedido, $activo)
+    function togglePedido($idPedido, $activo, $numAlmacen)
     {
 
         $respuesta = new RespuestaBD();
@@ -552,7 +564,7 @@ class CotizacionesModel
         $query = "UPDATE
                    cotizaciones
                 SET
-                    produccion=" . $activo . " where idCotizacion=" . $idPedido;
+                    produccion=" . $activo . ",numAlmacen=" . $numAlmacen . " where idCotizacion=" . $idPedido;
 
         // prepare query
         $stmt = $this->conn->prepare($query);
@@ -1686,7 +1698,7 @@ class CotizacionesModel
 
 
 
-    function realizarTraspaso($idRecepcion, $idAlmacen, $idUsuario)
+    function realizarTraspaso($idRecepcion, $idAlmacen, $idUsuario,$idChofer)
     {
 
         if (strpos($idRecepcion, 'D') !== false) {
@@ -1708,13 +1720,13 @@ class CotizacionesModel
             $stmt->execute();
 
 
-            $query = "insert into traspasos (idUsuario, idAlmacen, tipo, fecha, idRecepcion) values
-        (" . $idUsuario . "," . $idAlmacenSale . ",'S',now()," . $idRecepcion . ")";
+            $query = "insert into traspasos (idUsuario, idAlmacen, tipo, fecha, idRecepcion,idChofer) values
+        (" . $idUsuario . "," . $idAlmacenSale . ",'S',now()," . $idRecepcion . ",".$idChofer.")";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
 
-            $query = "insert into traspasos (idUsuario, idAlmacen, tipo, fecha, idRecepcion) values
-        (" . $idUsuario . "," . $idAlmacen . ",'E',addtime(now(),'2')," . $idRecepcion . ")";
+            $query = "insert into traspasos (idUsuario, idAlmacen, tipo, fecha, idRecepcion,idChofer) values
+        (" . $idUsuario . "," . $idAlmacen . ",'E',addtime(now(),'2')," . $idRecepcion . ",".$idChofer.")";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
         }
@@ -2083,6 +2095,43 @@ class CotizacionesModel
             $respuesta->mensaje = "";
             $respuesta->exito = true;
             $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+    function obtenerUltimaFechaDeEntrega($idCotizacion)
+    {
+        $query = "SELECT  max(fecha) fechaUltimaEntrega FROM remisiones 
+             where idPedido=" . $idCotizacion;
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        $fechaEntrega="";
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+                extract($row);
+
+                $fechaEntrega = $fechaUltimaEntrega;
+
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->valor = $fechaEntrega;
         } else {
             $respuesta->mensaje = "No se encontraron datos ";
             $respuesta->exito = false;
@@ -2684,6 +2733,26 @@ class CotizacionesModel
         //primero insertamos 
         $query = "delete from 
         cotizaciondetalle
+     where idCotizacionDet=" . $idCotizacionDet;
+
+        $stmt = $this->conn->prepare($query);
+
+
+        if (!$stmt->execute()) {
+            $mensaje = $stmt->errorInfo();
+        }
+    }
+
+
+    function duplicarPartida(
+        $idCotizacionDet
+
+    ) {
+
+        //primero insertamos 
+        $query = "INSERT INTO cotizaciondetalle (idProducto,cantidad,preciounitario,metros,idCotizacion,idUnidad,precioUM)
+        SELECT idProducto,cantidad,preciounitario,metros,idCotizacion,idUnidad,precioUM FROM cotizaciondetalle
+        
      where idCotizacionDet=" . $idCotizacionDet;
 
         $stmt = $this->conn->prepare($query);

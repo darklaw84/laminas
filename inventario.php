@@ -32,6 +32,10 @@ $respuesta = $controller->obtenerProductosEntrada();
 $productos = $respuesta->registros;
 
 
+$respuesta = $controller->obtenerProductosEntradaConComprometido();
+$productosComp = $respuesta->registros;
+
+
 $respuesta = $devcontroller->obtenerDevoluciones();
 $devoluciones = $respuesta->registros;
 
@@ -197,6 +201,7 @@ $devoluciones = $respuesta->registros;
 
 
                             <th>Usados</th>
+                            
                             <th>Disponibles</th>
                             <th>Almacen</th>
                             <?php if ($_SESSION['traspasos'] == "1") { ?>
@@ -233,6 +238,66 @@ $devoluciones = $respuesta->registros;
                                         <?php } ?>
                                 </tr>
                         <?php }
+                        } ?>
+
+
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="5" style="text-align:right">Total:</th>
+                            <th colspan="2"></th>
+
+                            <th></th>
+
+
+
+                        </tr>
+                    </tfoot>
+
+
+                </table>
+            </div>
+            <!-- hasta aqui llega-->
+        </div>
+
+
+        <div class="main-card mb-3 card">
+            <div class="card-body">
+                <h2>Inventario Comprometido</h2>
+                <table style="width: 100%;" id="comprometido" class="table table-hover table-striped table-bordered ">
+                    <thead>
+                        <tr>
+
+                            
+                            <th>Producto</th>
+                            <th>UM</th>
+                            <th>Cant Total</th>
+
+
+
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <?php if (isset($productosComp) && count($productosComp) > 0) {
+                            foreach ($productosComp as $det) {
+                                if ($det['comprometido'] > 0) {
+                                    if (is_numeric($det['largo'])) {
+                                        $largo = $det['largo'];
+                                    } else {
+                                        $largo = "";
+                                    } ?>
+                                    <tr>
+
+                                        <a>
+                                            
+                                            <td><?php echo $det['sku'] . " " . $det['producto'] . " " . $largo . " " . $det['ancho'] . " " . $det['calibre'] . " " . $det['tipo'] ?></td>
+                                            <td><?php echo $det['unidadComp'] ?></td>
+                                            <td><?php echo  number_format($det['comprometido'], 2, '.', ','); ?></td>
+
+                                    </tr>
+                        <?php }
+                            }
                         } ?>
 
 
@@ -317,8 +382,10 @@ $devoluciones = $respuesta->registros;
 </div>
 
 <script>
+   
+
     $(document).ready(function() {
-        $('#recepcionesT').DataTable({
+        $('#comprometido').DataTable({
             scrollY: '35vh',
             scrollCollapse: true,
             paging: false,

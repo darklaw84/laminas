@@ -15,12 +15,12 @@ class CotizacionController
 
 
 
-    function obtenerCotizaciones($tipo, $idUsuario)
+    function obtenerCotizaciones($tipo, $idUsuario,$numAlmacen)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CotizacionesModel($db);
-        $respuesta = $clase->obtenerCotizaciones($tipo, $idUsuario);
+        $respuesta = $clase->obtenerCotizaciones($tipo, $idUsuario,$numAlmacen);
 
         return $respuesta;
     }
@@ -104,12 +104,12 @@ class CotizacionController
         return true;
     }
 
-    function togglePedido($idPedido, $activo)
+    function togglePedido($idPedido, $activo,$numAlmacen)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CotizacionesModel($db);
-        $respuesta = $clase->togglePedido($idPedido, $activo);
+        $respuesta = $clase->togglePedido($idPedido, $activo,$numAlmacen);
 
         return $respuesta;
     }
@@ -187,12 +187,12 @@ class CotizacionController
     }
 
 
-    function realizarTraspaso($idRecepcion, $idAlmacen,$idUsuario)
+    function realizarTraspaso($idRecepcion, $idAlmacen,$idUsuario,$idChofer)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CotizacionesModel($db);
-        $respuesta = $clase->realizarTraspaso($idRecepcion, $idAlmacen,$idUsuario);
+        $respuesta = $clase->realizarTraspaso($idRecepcion, $idAlmacen,$idUsuario,$idChofer);
 
         return $respuesta;
     }
@@ -547,6 +547,21 @@ class CotizacionController
         $db = $database->getConnection();
         $clase = new CotizacionesModel($db);
         $respuesta = $clase->eliminarProductoCotizacion(
+            $idCotizacionDet
+
+        );
+
+        return $respuesta;
+    }
+
+    function duplicarPartida(
+        $idCotizacionDet
+
+    ) {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CotizacionesModel($db);
+        $respuesta = $clase->duplicarPartida(
             $idCotizacionDet
 
         );

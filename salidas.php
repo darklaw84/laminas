@@ -32,7 +32,7 @@ if (isset($_GET['idCotizacion'])) {
 
 //$salidas = $controller->obtenerSalidas(10)->registros;
 
-$cotizaciones = $controller->obtenerCotizaciones("PS", 0)->registros;
+$cotizaciones = $controller->obtenerCotizaciones("PS", 0,0)->registros;
 
 if ($idCotizacion != "") {
     $cotizacion = $controller->obtenerCotizacion($idCotizacion)->registros[0];

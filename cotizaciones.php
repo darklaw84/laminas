@@ -37,10 +37,10 @@ if ($entro != "") {
 
 
 if ($_SESSION['verCotizaciones']) {
-    $respuesta = $controller->obtenerCotizaciones("C", $_SESSION['idUsr']);
+    $respuesta = $controller->obtenerCotizaciones("C", $_SESSION['idUsr'], 0);
     $registros = $respuesta->registros;
 } else {
-    $respuesta = $controller->obtenerCotizaciones("PE", $_SESSION['idUsr']);
+    $respuesta = $controller->obtenerCotizaciones("PE", $_SESSION['idUsr'], 0);
     $registros = $respuesta->registros;
 }
 
@@ -232,8 +232,14 @@ $clientes = $respClientes->registros;
                                 <td><?php echo number_format($metrosLineales, 2, '.', ',') ?></td>
                                 <td><?php if ($reg['idUnidad'] == 3) {
                                         echo number_format($reg['cantidad'], 2, '.', ',');
-                                    } else {
+                                    } else if ($reg['idUnidad'] == 1) {
                                         echo number_format($reg['pesoTeorico'] * $reg['cantidad'], 2, '.', ',');
+                                    } else {
+                                        if ($metrosLineales == 0) {
+                                            echo number_format($reg['pesoTeorico'] * $reg['cantidad'], 2, '.', ',');
+                                        } else {
+                                            echo number_format($reg['pesoTeorico'] * $metrosLineales, 2, '.', ',');
+                                        }
                                     } ?></td>
 
 

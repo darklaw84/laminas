@@ -23,8 +23,8 @@ $(document).ready(function () {
         var pedidoCantidades = $('#' + id).children().find('.pedidoCantidades').val();
         var cancelarRemisiones = $('#' + id).children().find('.cancelarRemisiones').val();
 
-        
-        
+
+
 
         var productos = $('#' + id).children().find('.productos').val();
         var producciones = $('#' + id).children().find('.producciones').val();
@@ -210,7 +210,7 @@ $(document).ready(function () {
         }
 
 
-        
+
 
         if (inventarios === "1") {
             $('#inventariosM').prop("checked", true);
@@ -220,7 +220,7 @@ $(document).ready(function () {
         }
 
 
-        
+
 
         $('#modalAdministradoresUpdate').modal('toggle');
     });
@@ -350,10 +350,10 @@ $(document).ready(function () {
 
 
 
-       
 
 
-        
+
+
 
 
         if (correoAdmin === "" || nombreAdmin === "" || apellidosAdmin === "" || telefonoAdmin === "") {
@@ -396,8 +396,8 @@ $(document).ready(function () {
                     traspasos: traspasos,
                     tipo: 'update'
 
-                    
-                    
+
+
 
                 },
                 success: function (data) {
@@ -430,8 +430,8 @@ $(document).ready(function () {
                     $('#' + idAdmin).children().find('.pedidoCantidades').val(pedidoCantidades);
                     $('#' + idAdmin).children().find('.cancelarRemisiones').val(cancelarRemisiones);
 
-                    
-                    
+
+
 
                     $('#' + idAdmin).children().find('.tipos').val(tipos);
                     $('#' + idAdmin).children().find('.clientes').val(clientes);
@@ -449,18 +449,56 @@ $(document).ready(function () {
 
 
 
+    $(document).on('click', 'a[data-role=eliminarProducto]', function () {
+        var id = $(this).data('id');
 
+        $('#idProductoEliminar').val(id);
+
+
+        $('#modalEliminarProducto').modal('toggle');
+
+
+    });
+
+
+    $('#eliminarProducto').click(function () {
+
+
+        var idProducto = $('#idProductoEliminar').val();
+
+        $.ajax({
+            url: 'eliminarProducto.php',
+            type: 'post',
+            data: {
+                idProducto: idProducto,
+
+
+            },
+            dataType: 'json',
+            success: function (respuesta) {
+                if (respuesta.exito) {
+                    window.location = 'index.php?p=productos'
+                }
+                else {
+                    $('#modalMensajeError').find('.modal-body').text(respuesta.mensaje).end().modal('show');
+                }
+            }
+        });
+
+
+
+    });
 
 
     $(document).on('click', 'a[data-role=updateClientes]', function () {
         var id = $(this).data('id');
         var cliente = $('#' + id).children('td[data-target=cliente]').text();
         var rfc = $('#' + id).children('td[data-target=rfc]').text();
-        
+
         var representante = $('#' + id).children('td[data-target=representante]').text();
         var telefono = $('#' + id).children('td[data-target=telefono]').text();
-        
-        
+
+
 
         var tipoprecio = $('#' + id).children('td[data-target=precio]').text();
 
@@ -554,12 +592,12 @@ $(document).ready(function () {
                     $('#' + idCliente).children('td[data-target=cliente]').text(cliente);
                     $('#' + idCliente).children('td[data-target=rfc]').text(rfc);
                     $('#' + idCliente).children('td[data-target=representante]').text(representante);
-                    
+
 
                     $('#' + idCliente).children('td[data-target=mail]').text(mail);
                     $('#' + idCliente).children('td[data-target=telefono]').text(telefono);
                     $('#' + idCliente).children('td[data-target=uso]').text(usoText);
-                    
+
                     $('#' + idCliente).children().find('.comentarios').val(comentarios);
                     $('#' + idCliente).children().find('.direccion').val(direccion);
                     $('#' + idCliente).children().find('.idUso').val(idUso);
@@ -673,6 +711,7 @@ $(document).ready(function () {
         var idTipo = $('#TR' + id).children().find('.idTipo').val();
         var entrada = $('#TR' + id).children().find('.entrada').val();
         var salida = $('#TR' + id).children().find('.salida').val();
+        var idMateriaPrima = $('#TR' + id).children().find('.idMateriaPrima').val();
         var idUnidad = $('#TR' + id).children().find('.idUnidad').val();
         var idUnidadFactura = $('#TR' + id).children().find('.idUnidadFactura').val();
         var cambiarPrecios = $('#cambiarPrecios').val();
@@ -719,6 +758,7 @@ $(document).ready(function () {
         }
 
         $('#precioRevM').val(precioRev);
+        $('#idMateriaPrimaM').val(idMateriaPrima);
         $('#precioGenM').val(precioGen);
 
         if (idUnidad == 2 || idUnidad == 1) {
@@ -745,6 +785,7 @@ $(document).ready(function () {
         var idAncho = $('#idAnchoM').val();
         var precioRev = $('#precioRevM').val();
         var precioGen = $('#precioGenM').val();
+        var idMateriaPrima = $('#idMateriaPrimaM').val();
         var largo = $('#largoM').val();
 
         var entrada = 0;
@@ -757,7 +798,7 @@ $(document).ready(function () {
             salida = 1;
         }
 
-        
+
         var medidasreves = 0;
         if ($('#medidasM').prop("checked") == true) {
             medidasreves = 1;
@@ -798,8 +839,9 @@ $(document).ready(function () {
                             idUnidad: idUnidad,
                             idAncho: idAncho,
                             entrada: entrada,
+                            idMateriaPrima: idMateriaPrima,
                             salida: salida,
-                            medidasreves:medidasreves,
+                            medidasreves: medidasreves,
                             pesoTeorico: pesoTeorico,
                             producto: producto,
                             precioGen: precioGen,
@@ -823,9 +865,10 @@ $(document).ready(function () {
                             $('#TR' + idProducto).children('td[data-target=pesoTeorico]').text(pesoTeorico);
                             $('#TR' + idProducto).children().find('.idTipo').val(idTipo);
                             $('#TR' + idProducto).children().find('.idCalibre').val(idCalibre);
+                            $('#TR' + idProducto).children().find('.idMateriaPrima').val(idMateriaPrima);
                             $('#TR' + idProducto).children().find('.medidasreves').val(medidasreves);
 
-                            
+
                             $('#TR' + idProducto).children().find('.idAncho').val(idAncho);
                             $('#TR' + idProducto).children().find('.entrada').val(entrada);
                             $('#TR' + idProducto).children().find('.salida').val(salida);
@@ -1106,7 +1149,7 @@ $(document).ready(function () {
 
 
 
-        if (camionM === "" || placasM==="") {
+        if (camionM === "" || placasM === "") {
             $('#modalMensajeError').find('.modal-body').text('Los campos son obligatorios').end().modal('show');
         } else {
 

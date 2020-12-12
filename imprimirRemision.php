@@ -17,6 +17,10 @@ if (isset($idRemision)) {
 
 
         $idCotizacion = $respPro->registros[0]['idPedido'];
+        $camion = $respPro->registros[0]['camion'];
+        $placas = $respPro->registros[0]['placas'];
+        $operador = $respPro->registros[0]['operador'];
+        $vendedor = $respPro->registros[0]['vendedor'];
         
         $detalleRemision = $respPro->registros[0]['detalle'];
 
@@ -240,16 +244,9 @@ if($costoEnvio>0)
     $subtotal=$subtotal+$costoEnvio;
 }
 
-$pdf->SetX(244);
-$pdf->Cell(26, 6, "GRAN TOTAL", $bor, 0, 'C');
-$pdf->Cell(22, 6, "$ " . number_format($subtotal, 2, '.', ','), $bor, 1, 'C');
-$pdf->SetX(244);
-$pdf->Cell(26, 6, "DESCUENTO", $bor, 0, 'C');
 
 
-if ($descuento > 0) {
-    $descuento = $descuento * $subtotal / 100;
-}
+
 $base = $subtotal - $descuento;
 $iva = $base * 16 / 100;
 $grantotal = $base + $iva;
@@ -257,9 +254,6 @@ $grantotal = $base + $iva;
 $grantotal = round($grantotal);
 $base = $grantotal / 1.16;
 $iva = $grantotal * .16/1.16;
-
-
-$pdf->Cell(22, 6, "$ " . number_format($descuento, 2, '.', ','), $bor, 1, 'C');
 
 
 
@@ -297,79 +291,26 @@ if (strlen($msjLetras) > 80) {
 $pdf->Cell(155, 6, utf8_decode(strtoupper($msjLetras)) . " M.N.", $bori, 1, 'L');
 $alto = 5;
 
-if ($observaciones != "") {
-    $pdf->SetX($izq);
-    $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("OBSERVACIONES:"), $bori, 0, 'R');
-    $pdf->SetFont('Arial', '', $letra);
-    $pdf->Cell(155, $alto, strtoupper(utf8_decode($observaciones)), $bori, 1, 'L');
-}
-if ($condiciones != "") {
-    $pdf->SetX($izq);
-    $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("CONDICIONES:"), $bori, 0, 'R');
-    $pdf->SetFont('Arial', '', $letra);
-    $pdf->Cell(155, $alto, strtoupper(utf8_decode($condiciones)), $bori, 1, 'L');
-}
-if ($vigencia != "") {
-    $pdf->SetX($izq);
-    $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("VIG. DE PRECIOS:"), $bori, 0, 'R');
-    $pdf->SetFont('Arial', '', $letra);
-    $pdf->Cell(155, $alto, strtoupper(utf8_decode($vigencia)), $bori, 1, 'L');
-}
-if ($formapago != "") {
-    $pdf->SetX($izq);
-    $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("FORMA DE PAGO:"), $bori, 0, 'R');
-    $pdf->SetFont('Arial', '', $letra);
-    $pdf->Cell(155, $alto, strtoupper(utf8_decode($formapago)), $bori, 1, 'L');
-}
-if ($uso != "") {
-    $pdf->SetX($izq);
-    $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("CFDI:"), $bori, 0, 'R');
-    $pdf->SetFont('Arial', '', $letra);
-    $pdf->Cell(155, $alto, strtoupper(utf8_decode($uso)), $bori, 1, 'L');
-}
-if ($fechaEntrega != "") {
-    $pdf->SetX($izq);
-    $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("FECHA ENTREGA:"), $bori, 0, 'R');
-    $pdf->SetFont('Arial', '', $letra);
-    $pdf->Cell(155, $alto, strtoupper(utf8_decode($fechaEntrega)), $bori, 1, 'L');
-}
-if ($lugarentrega != "") {
-    $pdf->SetX($izq);
-    $pdf->SetFont('Arial', 'B', $letra);
-    $pdf->Cell(30, $alto, utf8_decode("LUG. DE ENTREGA:"), $bori, 0, 'R');
-    $pdf->SetFont('Arial', '', $letra);
-    $pdf->Cell(155, $alto, strtoupper(utf8_decode($lugarentrega)), $bori, 1, 'L');
-}
+
 
 $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', $letra);
-$pdf->Cell(30, $alto, utf8_decode("NOTA:"), $bori, 0, 'R');
+$pdf->Cell(30, $alto, utf8_decode("CHOFER:"), $bori, 0, 'R');
 $pdf->SetFont('Arial', '', $letra);
-$pdf->Cell(155, $alto, utf8_decode('Precios netos, sujetos a cambio sin previo aviso'), $bori, 1, 'L');
+$pdf->Cell(155, $alto, utf8_decode($operador), $bori, 1, 'L');
 
 
-$pdf->Cell(155, $alto, strtoupper(utf8_decode('')), $bori, 1, 'L');
-$pdf->Cell(155, $alto, strtoupper(utf8_decode('')), $bori, 1, 'L');
 $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', $letra);
-$pdf->Cell(30, $alto, utf8_decode(""), $bori, 0, 'R');
+$pdf->Cell(30, $alto, utf8_decode("UNIDAD:"), $bori, 0, 'R');
 $pdf->SetFont('Arial', '', $letra);
-$pdf->Cell(155, $alto, utf8_decode('Sin más por el momento y confiando recibir una respuesta favorable, quedo atent@ a sus comentarios.'), $bori, 1, 'L');
+$pdf->Cell(155, $alto, utf8_decode($camion." - ".$placas), $bori, 1, 'L');
 
-$pdf->Cell(155, $alto, strtoupper(utf8_decode('')), $bori, 1, 'L');
 $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', $letra);
-$pdf->Cell(30, $alto, utf8_decode(""), $bori, 0, 'R');
+$pdf->Cell(30, $alto, utf8_decode("VENDEDOR:"), $bori, 0, 'R');
 $pdf->SetFont('Arial', '', $letra);
-$pdf->Cell(155, $alto, utf8_decode('Saludos cordiales,'), $bori, 1, 'L');
-
-
+$pdf->Cell(155, $alto, utf8_decode($vendedor), $bori, 1, 'L');
 
 $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', 7);

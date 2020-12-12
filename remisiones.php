@@ -76,7 +76,7 @@ $registros = $respuesta->registros;
                                     <a href="#" class="btn btn-primary" data-role="imprimeCartaPorte" data-id="<?php echo $reg['idRemision'] ?>">Carta Porte</a></td>
                                 <td>
                                     <?php if ($_SESSION['cancelarRemisiones'] == "1") { ?>
-                                        <a href="#" class="btn btn-warning" data-role="cancelarRemision" data-id="<?php echo $reg['idRemision'] ?>">Cancelar</a>
+                                        <a class="btn btn-warning"  href="#" data-role="cancelarRemision" data-id="<?php echo $reg['idRemision'] ?>">Cancelar</a>
                                     <?php } ?>
                                 </td>
                             </tr>

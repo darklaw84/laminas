@@ -19,10 +19,19 @@ if (isset($_GET['entro'])) {
 
 
 
+if (isset($_POST['numAlmacenProd'])) {
+    $_SESSION["numAlmacenProduccion"] = $_POST['numAlmacenProd'];
+}
+
+if (!isset($_SESSION["numAlmacenProduccion"])) {
+    $_SESSION["numAlmacenProduccion"] = 1;
+}
 
 
 
-$respuesta = $controller->obtenerCotizaciones("PR", 0);
+
+
+$respuesta = $controller->obtenerCotizaciones("PR", 0, $_SESSION["numAlmacenProduccion"]);
 $registros = $respuesta->registros;
 
 
@@ -54,6 +63,28 @@ $producciones = $respuesta->registros;
 
 
         </div>
+        <form id="formAlmacenes" method="POST" action="index.php?p=producciones">
+            <div class="row mb-2 mt-2">
+                <div class="col-md-4">
+                </div>
+                <div class="col-md-4">
+                    <label for="clave">Almacen</label>
+                    <div>
+                        <select class=" form-control " onchange="document.getElementById('formAlmacenes').submit();" id="numAlmacenProd" name="numAlmacenProd">
+                            <option <?php if (isset($_SESSION["numAlmacenProduccion"]) && $_SESSION["numAlmacenProduccion"] == "1") {
+                                        echo "selected";
+                                    } ?> value="1">Almacen 1</option>
+                            <option <?php if (isset($_SESSION["numAlmacenProduccion"]) && $_SESSION["numAlmacenProduccion"] == "2") {
+                                        echo "selected";
+                                    } ?> value="2">Almacen 2</option>
+
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                </div>
+            </div>
+        </form>
 
         <!-- aqui va el contenido de la página -->
 
@@ -183,7 +214,7 @@ $producciones = $respuesta->registros;
                 <table style="width: 100%;" id="ultimasproducciones" class="table table-hover table-striped table-bordered">
                     <thead>
                         <tr>
-                        <th># </th>
+                            <th># </th>
                             <th>P / D</th>
                             <th># Ped</th>
                             <th>Cancelar</th>
@@ -214,14 +245,14 @@ $producciones = $respuesta->registros;
                         ?>
                             <tr id="<?php echo $reg['idProduccion'] ?>">
 
-                            <td><?php
+                                <td><?php
                                     echo $reg['idProduccion'] ?></td>
                                 <td><?php if ($reg['tipoProd'] == "D") {
                                         echo "PD";
                                     } else {
                                         echo "PR";
                                     }
-                                 ?></td>
+                                    ?></td>
                                 <td>PE<?php echo $reg['idCotizacion'] ?></td>
                                 <td>
                                     <?php if ($reg['idUsuario'] == $_SESSION['idUsr'] && $reg['idRemisionDet'] == null) {

@@ -95,6 +95,16 @@ if ($entro == "3") {
     }
 }
 
+if ($entro == "4") {
+
+    if (isset($_GET['idCotizacionDet'])) {
+        $idCotizacionDet = $_GET['idCotizacionDet'];
+
+        $contCotizaciones->duplicarPartida($idCotizacionDet);
+        $contCotizaciones->recalcularCotizacion($idCotizacion);
+    }
+}
+
 
 if ($entro == "1") {
     $descuentoCam = $_POST['descuentoCam'];
@@ -319,6 +329,11 @@ $productos = $respuesta->registros;
                                                 if (isset($productos)) {
                                                     foreach ($productos as $ins) {
                                                         $verselected = "";
+                                                        if (is_numeric($ins['largo'])) {
+                                                            $largo = $ins['largo'];
+                                                        } else {
+                                                            $largo = "";
+                                                        }
                                                         if (isset($idProd)) {
                                                             if ($idProd == $ins['idProducto']) {
                                                                 $verselected = "selected";
@@ -326,8 +341,10 @@ $productos = $respuesta->registros;
                                                         } else {
                                                             $verselected = "";
                                                         }
+                                                        $descripcion = strtoupper($ins['sku'] . " " . $ins['producto'] . " " . $largo . " " . $ins['ancho'] . " " . $ins['calibre'] . " " . $ins['tipo']);
+                                                        $descripcion = str_replace("N/A", "", $descripcion);
                                                         echo '<option value="' . $ins['idProducto'] . '" ' . $verselected
-                                                            . '   >' . strtoupper($ins['sku'] . " - " . $ins['producto'] . " - " . $ins['calibre'] . " - " . $ins['tipo']) . '</option>';
+                                                            . '   >' . strtoupper($descripcion) . '</option>';
                                                     }
                                                 } ?>
                                             </select>
@@ -405,6 +422,7 @@ $productos = $respuesta->registros;
                             <th>Metros Lineales</th>
                             <th>Peso Teórico</th>
                             <th>X</th>
+                            <th>Duplicar</th>
 
 
                         </tr>
@@ -452,13 +470,19 @@ $productos = $respuesta->registros;
                                 <td><?php echo number_format($metrosLineales, 2, '.', ',') ?></td>
                                 <td><?php if ($reg['idUnidad'] == 3) {
                                         echo number_format($reg['cantidad'], 2, '.', ',');
-                                    } else {
+                                    } else if ($reg['idUnidad'] == 1) {
                                         echo number_format($reg['pesoTeorico'] * $reg['cantidad'], 2, '.', ',');
+                                    } else {
+                                        if ($metrosLineales == 0) {
+                                            echo number_format($reg['pesoTeorico'] * $reg['cantidad'], 2, '.', ',');
+                                        } else {
+                                            echo number_format($reg['pesoTeorico'] * $metrosLineales, 2, '.', ',');
+                                        }
                                     } ?></td>
                                 <td><a href="index.php?p=cotizacionesact&entro=3&idCotizacion=<?php echo $idCotizacion; ?>&idCotizacionDet=<?php echo $reg['idCotizacionDet'] ?>" <?php if (isset($pedido) && $pedido == "1") {
                                                                                                                                                                                         echo "style='display:none;'";
                                                                                                                                                                                     } else { ?> class="btn btn-primary" <?php } ?>>X</a></td>
-
+                                <td><a href="index.php?p=cotizacionesact&entro=4&idCotizacion=<?php echo $idCotizacion; ?>&idCotizacionDet=<?php echo $reg['idCotizacionDet'] ?>">Duplicar</a></td>
 
                             </tr>
                         <?php $cont++;
