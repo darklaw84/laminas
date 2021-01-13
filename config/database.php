@@ -3,11 +3,13 @@ class Database{
  
     // specify your own database credentials
 	//LOCALHOST BD
-    //private $host = "localhost";      private $db_name = "centra22_general";    private $username = "centra22_admin";    private $password = "RealMadrid84*";
+    private $host = "localhost";      private $db_name = "centra22_general";    private $username = "centra22_admin";    private $password = "RealMadrid84*";
 
 	//AMAZON BD
-	 private $host = "dblaminas.ccdcz35oayg6.us-east-2.rds.amazonaws.com";	 private $db_name = "laminas";    private $username = "admin";    private $password = "RealMadrid84*";
+	// private $host = "dblaminas.ccdcz35oayg6.us-east-2.rds.amazonaws.com";	 private $db_name = "laminas";    private $username = "admin";    private $password = "T3cn1m3x.";
 
+    //SU SERVER
+   // private $host = "localhost";    private $db_name = "centra22_general";    private $username = "centra22_admin";    private $password = "RealMadrid84*";
   
     public $conn;
  

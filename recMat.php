@@ -43,9 +43,9 @@ if ($entro == "1") {
 ?>
 
 
-    <input type="hidden" name="idOrden" id="idOrdenRecMat" value="<?php if (isset($idOrden)) {
-                                                    echo $idOrden;
-                                                } ?>">
+<input type="hidden" name="idOrden" id="idOrdenRecMat" value="<?php if (isset($idOrden)) {
+                                                                    echo $idOrden;
+                                                                } ?>">
 
 
 
@@ -76,7 +76,8 @@ if ($entro == "1") {
                         <label for="">&nbsp; </label>
                         <div>
                             <input type="hidden" value="1" name="entro">
-                            <button type="submit" class="btn btn-primary">Consultar</button> </div>
+                            <button type="submit" class="btn btn-primary">Consultar</button>
+                        </div>
                     </div>
 
 
@@ -99,7 +100,7 @@ if ($entro == "1") {
                                 <th>UM</th>
                                 <th>Cant Ordenada</th>
                                 <th>Cant Recibida</th>
-                               <!-- <th>Peso Ordenado</th>
+                                <!-- <th>Peso Ordenado</th>
                                 <th>Peso Recibido</th> -->
                                 <th>Recibir</th>
 
@@ -111,27 +112,45 @@ if ($entro == "1") {
                                 foreach ($partidas as $ins) {
                                     if (is_numeric($ins['largo'])) {
                                         $largo = $ins['largo'];
-                                        
                                     } else {
                                         $largo = "";
-                                    } ?>
+                                    }
+
+                                    $ordenada = 0;
+                                    $recibida = 0;
+                                    if ($ins['idUnidad'] == 3) {
+                                        $ordenada = $ins['pesoTeorico'];
+                                        $recibida = $ins['total'];
+                                    } else if ($ins['idUnidad'] == 2) {
+                                        $ordenada = $ins['cantidad'];
+                                        $recibida = $ins['totalCantidad'];
+                                    } else {
+                                        $ordenada = $ins['cantidad'];
+                                        $recibida = $ins['totalCantidad'];
+                                    }
+
+
+                            ?>
                                     <tr id="<?php echo $ins['idOrdenCompraDet'] ?>">
 
                                         <a>
                                             <td data-target="producto"><?php echo strtoupper($ins['sku'] . " " . $ins['producto'] . " " . $largo . " " . $ins['ancho'] . " " . $ins['calibre'] . " " . $ins['tipo']) ?></td>
                                             <td><?php echo $ins['unidad'] ?></td>
-                                            <td><?php echo number_format($ins['cantidad'], 2, '.', ',') ?></td>
-                                            <td><?php echo number_format($ins['totalCantidad'], 2, '.', ',');?></td>
-                                          <!--  <td><?php echo $ins['pesoTeorico'] ?></td>
+                                            <td><?php echo number_format($ordenada, 2, '.', ',') ?></td>
+                                            <td><?php echo number_format($recibida, 2, '.', ','); ?></td>
+                                            <!--  <td><?php echo $ins['pesoTeorico'] ?></td>
                                             <td><?php echo $ins['total'] ?></td>-->
                                             <td><input class="idUnidad" type="hidden" value="<?php echo $ins['idUnidad'] ?>">
                                                 <input class="prodPesoTeorico" type="hidden" value="<?php echo $ins['prodPesoTeorico'] ?>">
                                                 <input class="idProducto" type="hidden" value="<?php echo $ins['idProducto'] ?>">
                                                 <?php if ($ins['recibido'] == 1) {
                                                     echo "Recibido";
-                                                } else { ?><a href="#" class="btn btn-primary" data-role="recibirMateria" data-id="<?php echo $ins['idOrdenCompraDet'] ?>">Recibir</a><?php } ?></td>
+                                                } else { ?><a href="#" class="btn btn-primary" data-role="recibirMateria" data-id="<?php echo $ins['idOrdenCompraDet'] ?>">Recibir</a><?php } ?>
+                                            </td>
 
 
+                                           
+                                            </td>
                                     </tr>
                             <?php }
                             } ?>

@@ -41,7 +41,7 @@ $registros = $respuesta->registros;
 
 
 
-$respClientes = $contcat->obtenerProveedores();
+$respClientes = $contcat->obtenerProveedoresActivos();
 $clientes = $respClientes->registros;
 
 
@@ -105,6 +105,17 @@ $clientes = $respClientes->registros;
 
         </div>
 
+
+        <div class="row mt-2 mb-2">
+            <div class="col-md-8">
+            </div>
+            <div class="col-md-2">
+                <a href="generarExcelOrdenesCompra.php" target="_blank" class="btn btn-success"> Exportar Ordenes de Compra XLSX
+                </a>
+            </div>
+            
+        </div>
+
         <!-- aqui va el contenido de la página -->
 
         <div class="main-card mb-3 card">
@@ -132,11 +143,11 @@ $clientes = $respClientes->registros;
                             <tr id="<?php echo $reg['idOrden'] ?>">
 
 
-                                <td>O<?php echo $reg['idOrden'] ?></td>
+                                <td><?php echo $reg['idOrden'] ?></td>
                                 <td><?php echo strtoupper($reg['proveedor']) ?></td>
                                 <td><?php echo $reg['fecha'] ?></td>
                                 <td><?php echo $reg['fechaRequerida'] ?></td>
-                                <td><img title="<?php echo $reg['esta']; ?>" src="./imagenes/<?php echo $reg['icono']; ?>" style="height: 20px"></td>
+                                <td><?php if($reg['icono']=="correcto.png"){ echo "."; } ?><img title="<?php echo $reg['esta']; ?>" src="./imagenes/<?php echo $reg['icono']; ?>" style="height: 20px"></td>
                                 <td><?php echo "$ " . number_format($reg['total'], 2, '.', ',') ?></td>
                                 <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="<?php echo $reg['idOrden'] ?>" class="mr-2 mb-2 btn btn-dark"><?php echo count($reg['productos'], COUNT_NORMAL) ?> Partidas</button></td>
                                 <td><?php echo strtoupper($reg['usuario']) ?></td>

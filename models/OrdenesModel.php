@@ -130,7 +130,7 @@ class OrdenesModel
                 // just $name only
                 extract($row);
                 $detalle = $this->obtenerDetalleOrden($idOrden);
-
+                
                 $productos = $detalle->registros;
 
                 $total = 0;
@@ -274,9 +274,12 @@ class OrdenesModel
                     }
                 }
 
+                $fechaUltimaRecepcion = $this->obtenerFechaRecepcion($idOrdenCompraDet);
+
 
                 $registro_item = array(
                     "idOrdenCompraDet" => $idOrdenCompraDet,
+                    "fechaUltimaRecepcion" => $fechaUltimaRecepcion,
                     "producto" => $producto,
                     "unidad" => $unidad,
                     "idUnidad" => $idUnidad,
@@ -313,6 +316,39 @@ class OrdenesModel
     }
 
 
+    function obtenerFechaRecepcion($idOrdenCompraDet)
+    {
+
+
+
+        $query = "SELECT  max(fechaRecibe) fechaUltima from recepciones
+         where idOrdenCompraDet = " . $idOrdenCompraDet;
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $fecha = "";
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+                extract($row);
+
+                $fecha = $fechaUltima;
+            }
+        }
+
+
+        return $fecha;
+    }
+
+
     function eliminarOrden($idOrden)
     {
         $respuesta = new RespuestaBD();
@@ -343,16 +379,16 @@ class OrdenesModel
     function finalizarOrden($idOrden)
     {
         $respuesta = new RespuestaBD();
-       
 
-            $query = "update ordenescompra set estatus = 'F' where idOrden = " . $idOrden;
-            $stmt = $this->conn->prepare($query);
-            $stmt->execute();
 
-            
-            $respuesta->mensaje = "";
-            $respuesta->exito = true;
-        
+        $query = "update ordenescompra set estatus = 'F' where idOrden = " . $idOrden;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+
+        $respuesta->mensaje = "";
+        $respuesta->exito = true;
+
 
 
         return $respuesta;

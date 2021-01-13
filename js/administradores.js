@@ -502,9 +502,9 @@ $(document).ready(function () {
 
         var tipoprecio = $('#' + id).children('td[data-target=precio]').text();
 
-        var comentarios = $('#' + id).children().find('.comentarios').val();
+        var comentarios = '';
         var direccion = $('#' + id).children().find('.direccion').val();
-        var direccionentrega = $('#' + id).children().find('.direccionentrega').val();
+        var direccionentrega = '';
         var mail = $('#' + id).children().find('.mail').val();
         var idUso = $('#' + id).children().find('.idUso').val();
         var idVendedor = $('#' + id).children().find('.idVendedor').val();
@@ -517,10 +517,10 @@ $(document).ready(function () {
         $('#idCliente').val(id);
         $('#telefonoM').val(telefono);
         $('#mailM').val(mail);
-        $('#comentariosM').val(comentarios);
+        
         $('#idUsoM').val(idUso);
         $('#idVendedorM').val(idVendedor);
-        $('#direccionentregaM').val(direccionentrega);
+        
 
         if (tipoprecio === "General") {
             $('#tipoprecioM').val('G');
@@ -550,18 +550,18 @@ $(document).ready(function () {
         var representante = $('#representanteM').val();
 
         var telefono = $('#telefonoM').val();
-        var comentarios = $('#comentariosM').val();
+        var comentarios = '';
         var idUso = $('#idUsoM').val();
         var idVendedor = $('#idVendedorM').val();
         var mail = $('#mailM').val();
-        var direccionentrega = $('#direccionentregaM').val();
+        var direccionentrega = '';
         var usoText = $('#idUsoM option:selected').html();
         var tipoprecio = $('#tipoprecioM').val();
 
 
 
         if (cliente === "" || rfc === "" || direccion === "" || representante === ""
-            || direccionentrega === "" || telefono === "" || mail === "") {
+             || telefono === "" || mail === "") {
             $('#modalMensajeError').find('.modal-body').text('Los campos son obligatorios').end().modal('show');
         } else {
 
@@ -747,9 +747,15 @@ $(document).ready(function () {
         if (entrada === "1") {
             $('#chkEntradaM').prop("checked", true);
         }
+        else {
+            $('#chkEntradaM').prop("checked", false);
+        }
 
         if (salida === "1") {
             $('#chkSalidaM').prop("checked", true);
+        }
+        else {
+            $('#chkSalidaM').prop("checked", false);
         }
 
 

@@ -33,11 +33,15 @@ if ($entro != "") {
 
     if (isset($_POST['chkEntrada'])) {
         $chkEntrada = "1";
+    } else {
+        $chkEntrada = "0";
     }
 
 
     if (isset($_POST['chkSalida'])) {
         $chkSalida = "1";
+    } else {
+        $chkSalida = "0";
     }
 
 
@@ -76,7 +80,8 @@ if ($entro != "") {
                     $idUnidadFactura,
                     $chkSalida,
                     $chkEntrada,
-                    isset($_POST['medidas']),$idMateriaPrima
+                    isset($_POST['medidas']),
+                    $idMateriaPrima
                 );
 
                 if (!$respuesta->exito) {
@@ -221,7 +226,7 @@ $productosEntrada = $respuesta->registros;
                                         </select>
                                     </div>
                                 </div>
-                                
+
 
                             </div>
 
@@ -276,7 +281,7 @@ $productosEntrada = $respuesta->registros;
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-6 col-md-4">
-                                    <label for="idCalibre">Precio General</label>
+                                    <label for="idCalibre">Precio General Sin IVA</label>
                                     <div>
                                         <input type="number" step=".000001" maxlength="8" class="form-control" id="precioGen" name="precioGen" value="<?php if (isset($precioGen)) {
                                                                                                                                                             echo strtoupper($precioGen);
@@ -284,7 +289,7 @@ $productosEntrada = $respuesta->registros;
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-4">
-                                    <label for="idTipo">Precio Revendedores</label>
+                                    <label for="idTipo">Precio Revendedores sin IVA</label>
                                     <div>
                                         <input type="number" step=".000001" maxlength="8" class="form-control" id="precioRev" name="precioRev" value="<?php if (isset($precioRev)) {
                                                                                                                                                             echo strtoupper($precioRev);
@@ -312,12 +317,12 @@ $productosEntrada = $respuesta->registros;
                                     <label for="idCalibre">Materia Prima</label>
                                     <div>
                                         <select class=" form-control " name="idMateriaPrima">
-                                            <option value="0" >N/A</option>
+                                            <option value="0">N/A</option>
                                             <?php
                                             if (isset($productosEntrada)) {
                                                 foreach ($productosEntrada as $ins) {
                                                     echo '<option value="' . $ins['idProducto'] . '" >' .
-                                                    strtoupper($ins['sku'] . " - " . $ins['producto'] . " - " . $ins['ancho'] . " - " . $ins['calibre'] . " - " . $ins['tipo']) . '</option>';
+                                                        strtoupper($ins['sku'] . " - " . $ins['producto'] . " - " . $ins['ancho'] . " - " . $ins['calibre'] . " - " . $ins['tipo']) . '</option>';
                                                 }
                                             } ?>
                                         </select>
@@ -375,24 +380,24 @@ $productosEntrada = $respuesta->registros;
                             <th>Calibre</th>
                             <th>Largo</th>
                             <th>Ancho</th>
-                            
-                           
-                            
+
+
+
                             <th>Unidad</th>
                             <th>Peso UM</th>
                             <th>$ Gen</th>
                             <th>$ Rev</th>
                             <th>Tipo</th>
                             <th><?php if (isset($_SESSION['editarProductos']) && $_SESSION['editarProductos'] == "1") {
-                                                                                                                                                    echo "Actualizar";
-                                                                                                                                                } else {
-                                                                                                                                                    echo "Ver";
-                                                                                                                                                } ?></th>
+                                    echo "Actualizar";
+                                } else {
+                                    echo "Ver";
+                                } ?></th>
                             <th>Activo</th>
-                            
-                           
+
+
                             <th>Uni Fac</th>
-                        <th>X</th>
+                            <th>X</th>
 
                         </tr>
                     </thead>
@@ -403,15 +408,15 @@ $productosEntrada = $respuesta->registros;
                                 <td data-target="producto"><?php echo strtoupper($reg['producto']) ?></td>
                                 <td data-target="tipo"><?php echo strtoupper($reg['tipo']) ?></td>
                                 <td data-target="calibre"><?php echo strtoupper($reg['calibre']) ?></td>
-                               
+
                                 <td data-target="largo"><?php echo strtoupper($reg['largo']) ?></td>
                                 <td data-target="ancho"><?php echo strtoupper($reg['ancho']) ?></td>
-                                
+
                                 <td data-target="unidad"><?php echo strtoupper($reg['unidad']) ?></td>
                                 <td data-target="pesoTeorico"><?php echo strtoupper($reg['pesoTeorico']) ?></td>
                                 <td data-target="precioGen"><?php echo strtoupper($reg['precioGen']) ?></td>
                                 <td data-target="precioRev"><?php echo strtoupper($reg['precioRev']) ?></td>
-                                <td><img class="imgEntrada" src="imagenes/in.png" height="10px" style="display: <?php if ($reg['entrada'] == "1") {
+                                <td><?php if($reg['entrada']=="1"){ echo ".";}else if($reg['salida']=="1"){ echo "..";} ?><img class="imgEntrada" src="imagenes/in.png" height="10px" style="display: <?php if ($reg['entrada'] == "1") {
                                                                                                                     echo "block";
                                                                                                                 } else {
                                                                                                                     echo "none";
@@ -444,8 +449,8 @@ $productosEntrada = $respuesta->registros;
                                                                                                                                                                                                                                                         echo "Desactivado";
                                                                                                                                                                                                                                                     } ?></a></td>
 
-                                
-                              
+
+
                                 <td data-target="unidadFactura"><?php echo strtoupper($reg['unidadFactura']) ?></td>
                                 <td> <a href="#" class="btn btn-primary" data-role="eliminarProducto" data-id="<?php echo $reg['idProducto'] ?>">X</a></td>
                             </tr>

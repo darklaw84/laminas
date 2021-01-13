@@ -43,6 +43,9 @@ $(document).ready(function () {
         }
     });
 
+    
+
+ 
 
 
     $('#recepcionesT').DataTable({
@@ -82,7 +85,7 @@ $(document).ready(function () {
 
             // Update footer
             $(api.column(5).footer()).html(
-                '' + parseFloat(pageTotal).toFixed(2) + ' ( ' + parseFloat(total).toFixed(2) + ' total)'
+                '' + parseFloat(pageTotal).toFixed(2) 
             );
         }
     });

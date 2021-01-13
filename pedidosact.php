@@ -134,15 +134,15 @@ if (isset($idCotizacion)) {
                                     </div>
                                 </div>
                                 <div class="col-md-2">
-                                        <label for="cantKit">Costo Envio</label>
-                                        <div>
-                                            <input type="number" maxlength="10" step="0.01" class="form-control" id="costoEnvioPed" name="costoEnvioPed" value="<?php if (isset($costoEnvio)) {
+                                    <label for="cantKit">Costo Envio</label>
+                                    <div>
+                                        <input type="number" maxlength="10" step="0.01" class="form-control" id="costoEnvioPed" name="costoEnvioPed" value="<?php if (isset($costoEnvio)) {
 
                                                                                                                                                                 echo $costoEnvio;
                                                                                                                                                             } ?>" />
 
-                                        </div>
                                     </div>
+                                </div>
                                 <div class="col-md-2">
                                     <label for="proveedor">&nbsp;</label>
                                     <div class="row">
@@ -208,7 +208,9 @@ if (isset($idCotizacion)) {
                             <th>Metros</th>
                             <th>Precio Unitario</th>
                             <th>Monto</th>
-                            <th>X</th>
+                            <th>Metros Lineales</th>
+                            <th>Peso Teórico</th>
+
 
 
                         </tr>
@@ -217,6 +219,10 @@ if (isset($idCotizacion)) {
 
                         <?php
                         $cont = 1;
+                        $cantidadTotal = 0;
+                        $totalMetrosLineales=0;
+                        $totalPesoTeorico=0;
+
                         foreach ($productosOrden as $reg) {
 
                             if (is_numeric($reg['largo'])) {
@@ -226,6 +232,45 @@ if (isset($idCotizacion)) {
                                 $largo = "";
                             }
 
+
+                            if ($reg['metros'] > 0) {
+
+                                $metrosLineales = $reg['metros'] * $reg['cantidad'];
+                            } else {
+                                if (is_numeric($reg['largo'])) {
+                                    $metrosLineales = $largo * $reg['cantidad'];
+                                } else {
+                                    $metrosLineales = 0;
+                                }
+                            }
+
+                            $cantidadTotal = $cantidadTotal + $reg['cantidad'];
+
+
+                            $totalMetrosLineales = $totalMetrosLineales + $metrosLineales;
+
+                                $pesoTeorico=0;
+
+                            if ($reg['idUnidad'] == 3) {
+                                $pesoTeorico=$totalPesoTeorico+ $reg['cantidad'];
+                            } else if ($reg['idUnidad'] == 1) {
+                                $pesoTeorico=$totalPesoTeorico+ ($reg['pesoTeorico'] * $reg['cantidad']);
+                                
+                            } else {
+                                if ($metrosLineales == 0) {
+
+                                    $pesoTeorico=$totalPesoTeorico+ ($reg['pesoTeorico'] * $reg['cantidad']);
+                                    
+                                } else {
+                                    $pesoTeorico=$totalPesoTeorico+ ($reg['pesoTeorico'] * $metrosLineales);
+                                    
+                                }
+                            }
+
+
+
+                            $totalPesoTeorico = $totalPesoTeorico + $pesoTeorico;
+
                         ?>
                             <tr>
                                 <?php
@@ -234,16 +279,27 @@ if (isset($idCotizacion)) {
                                 <td><?php echo $cont ?></td>
                                 <td><?php echo strtoupper($reg['sku'] . " " . $reg['producto'] . " " . $largo . " " . $reg['ancho'] . " " . $reg['calibre'] . " " . $reg['tipo']);   ?></td>
                                 <td><?php echo $reg['unidad'] ?></td>
-                                <td><?php if ($_SESSION['pedidoCantidades'] == "1") { ?><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="KCA<?php echo $reg['idCotizacionDet'] ?>" class="mr-2 mb-2 btn btn-dark"><?php echo number_format($reg['cantidad'], 2, '.', ',') ?></button><?php } else {
-                                                                                                                                                                                                                                                                                                                            echo number_format($reg['cantidad'], 2, '.', ',');
-                                                                                                                                                                                                                                                                                                                        } ?></td>
+                                <td><?php if ($_SESSION['pedidoCantidades'] == "1") { ?><button type="button" <?php if (count($reg['producciones']) > 0 || count($reg['devolucionesproducciones']) > 0) {
+                                                                                                                    echo 'disabled '; ?>title="Tienes que cancelar las producciones de esta partida para poder cambiar la cantidad" <?php  } ?> data-toggle="popover-custom-content" rel="popover-focus" popover-id="KCA<?php echo $reg['idCotizacionDet'] ?>" class="mr-2 mb-2 btn btn-dark"><?php echo number_format($reg['cantidad'], 2, '.', ',') ?></button><?php } else {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                    echo number_format($reg['cantidad'], 2, '.', ',');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                } ?></td>
                                 <td><?php echo "$ " . number_format($reg['precioUM'], 2, '.', ',') ?></td>
                                 <td><?php echo $reg['metros'] ?></td>
                                 <td><?php echo "$ " . number_format($reg['preciounitario'], 2, '.', ',') ?></td>
                                 <td><?php echo "$ " . number_format($totalPartida, 2, '.', ',') ?></td>
-                                <td><a href="index.php?p=cotizacionesact&entro=3&idCotizacion=<?php echo $idCotizacion; ?>&idCotizacionDet=<?php echo $reg['idCotizacionDet'] ?>" <?php if (isset($pedido) && $pedido == "1") {
-                                                                                                                                                                                        echo "style='display:none;'";
-                                                                                                                                                                                    } else { ?> class="btn btn-primary" <?php } ?>>X</a></td>
+
+                                <td><?php echo number_format($metrosLineales, 2, '.', ',') ?></td>
+                                <td><?php if ($reg['idUnidad'] == 3) {
+                                        echo number_format($reg['cantidad'], 2, '.', ',');
+                                    } else if ($reg['idUnidad'] == 1) {
+                                        echo number_format($reg['pesoTeorico'] * $reg['cantidad'], 2, '.', ',');
+                                    } else {
+                                        if ($metrosLineales == 0) {
+                                            echo number_format($reg['pesoTeorico'] * $reg['cantidad'], 2, '.', ',');
+                                        } else {
+                                            echo number_format($reg['pesoTeorico'] * $metrosLineales, 2, '.', ',');
+                                        }
+                                    } ?></td>
 
 
                             </tr>
@@ -252,6 +308,20 @@ if (isset($idCotizacion)) {
 
 
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" style="text-align:right">Total:</th>
+                            <th><?php echo $cantidadTotal; ?> </th>
+                            <th colspan="4" style="text-align:right">Total:</th>
+                            <th><?php echo $totalMetrosLineales; ?> </th>
+                            <th><?php echo $totalPesoTeorico; ?> </th>
+                          
+                            
+
+
+
+                        </tr>
+                    </tfoot>
 
                 </table>
 

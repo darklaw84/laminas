@@ -6,12 +6,13 @@ $(document).ready(function () {
         var idProducto = $('#' + id).children().find('.idProducto').val();
         var unidad = $('#' + id).children().find('.unidad').val();
         var metros = $('#' + id).children().find('.metros').val();
+        var largoancho = $('#' + id).children().find('.largoancho').val();
         var idUnidad = $('#' + id).children().find('.idUnidad').val();
         var cantidad = $('#' + id).children().find('.cantidad').val();
         var cantidadProcesada = $('#' + id).children().find('.cantidadProcesada').val();
         var pesoTeorico = $('#' + id).children().find('.pesoTeorico').val();
         var idProducto = $('#' + id).children().find('.idProducto').val();
-        $('#lblProducto').text('Producto Generado: ' + producto);
+        $('#lblProducto').text('Producto Generado: ' + producto + ' ' + largoancho);
         $('#idCotizacionDetM').val(id);
         $('#idProductoDet').val(idProducto);
         $('#pesoTeoricoProd').val(pesoTeorico);
@@ -52,6 +53,10 @@ $(document).ready(function () {
 
 
     $('#generarMateria').click(function () {
+
+        $('#generarMateria').prop('disabled', true);
+
+
         var idUnidad = $('#idUnidadProd').val();
         var metros = $('#metrosProd').val();
         var idCotizacionDetM = $('#idCotizacionDetM').val();
@@ -62,76 +67,15 @@ $(document).ready(function () {
         var pesoTeorico = $('#pesoTeoricoProd').val();
         var codigo = $('#codigoBarrasProd').val();
 
+        if (utilizadosUsM != "") {
 
-        if (codigo.includes("D")) {
-            codigo = codigo.replace('D', '');
-
-            var kilos = 0;
-
-            if (idUnidad == 2)//metro
-            {
-                kilos = pesoTeorico * metros * utilizadosM;
-            }
-            else if (idUnidad == 3) //kilos
-            {
-                kilos = utilizadosM;
-            }
-            else {
-                kilos = utilizadosM;
-            }
-
-            //si es una devolucion 
-
-            $.ajax({
-                url: 'generarMateriaDevolucion.php',
-                type: 'post',
-                data: {
-                    idCotizacionDetM: idCotizacionDetM,
-                    kilos: kilos,
-                    idProducto: idProducto,
-                    codigo: codigo,
-                    utilizadosUsM: utilizadosUsM,
-                    idAlmacen: idAlmacen,
-                    utilizadosM: utilizadosM
-                },
-                dataType: 'json',
-                success: function (response) {
-
-                    if (response.exito) {
-
-                        $('#modalProducirMateria').modal('hide');
-
-                        window.location = 'index.php?p=producciones'
-                    }
-                    else {
-                        $('#modalMensajeError').find('.modal-body').text(response.mensaje).end().modal('show');
-                    }
-
-
-
-                },
-                error: function (request, status, error) {
-                    alert(request.responseText);
-                }
-            });
-
-
-        }
-        else if (codigo.includes("R")) {
-
-            codigo = codigo.replace('R', '');
-
-
-            if (idAlmacen == 0) {
-                $('#modalMensajeError').find('.modal-body').text('Seleccione un almacen').end().modal('show');
-            }
-            else {
-
-                if (utilizadosM <= 0) {
-                    $('#modalMensajeError').find('.modal-body').text('El valor debe de ser mayor a 0').end().modal('show');
+            if (codigo.includes("D")) {
+                if (idAlmacen == 0) {
+                    $('#modalMensajeError').find('.modal-body').text('Seleccione un almacen').end().modal('show');
+                    $('#generarMateria').prop('disabled', false);
                 }
                 else {
-
+                    codigo = codigo.replace('D', '');
 
                     var kilos = 0;
 
@@ -147,117 +91,198 @@ $(document).ready(function () {
                         kilos = utilizadosM;
                     }
 
+                    //si es una devolucion 
 
-                    if (idUnidad == 1) {
-                        $.ajax({
-                            url: 'generarMateria.php',
-                            type: 'post',
-                            data: {
-                                idCotizacionDetM: idCotizacionDetM,
-                                kilos: kilos,
-                                idProducto: idProducto,
-                                codigo: codigo,
-                                utilizadosUsM: utilizadosUsM,
-                                idAlmacen: idAlmacen,
-                                utilizadosM: utilizadosM
-                            },
-                            dataType: 'json',
-                            success: function (response) {
+                    $.ajax({
+                        url: 'generarMateriaDevolucion.php',
+                        type: 'post',
+                        data: {
+                            idCotizacionDetM: idCotizacionDetM,
+                            kilos: kilos,
+                            idProducto: idProducto,
+                            codigo: codigo,
+                            utilizadosUsM: utilizadosUsM,
+                            idAlmacen: idAlmacen,
+                            utilizadosM: utilizadosM
+                        },
+                        dataType: 'json',
+                        success: function (response) {
 
-                                if (response.exito) {
+                            if (response.exito) {
 
-                                    $('#modalProducirMateria').modal('hide');
+                                $('#modalProducirMateria').modal('hide');
 
-                                    window.location = 'index.php?p=producciones'
-                                }
-                                else {
-                                    $('#modalMensajeError').find('.modal-body').text(response.mensaje).end().modal('show');
-                                }
-
-
-
-                            },
-                            error: function (request, status, error) {
-                                alert(request.responseText);
+                                window.location = 'index.php?p=producciones'
                             }
-                        });
+                            else {
+                                $('#generarMateria').prop('disabled', false);
+                                $('#modalMensajeError').find('.modal-body').text(response.mensaje).end().modal('show');
+                            }
+
+
+
+                        },
+                        error: function (request, status, error) {
+                            alert(request.responseText);
+                        }
+                    });
+                }
+
+
+            }
+            else if (codigo.includes("R")) {
+
+                codigo = codigo.replace('R', '');
+
+
+                if (idAlmacen == 0) {
+                    $('#modalMensajeError').find('.modal-body').text('Seleccione un almacen').end().modal('show');
+                    $('#generarMateria').prop('disabled', false);
+                }
+                else {
+
+                    if (utilizadosM <= 0) {
+                        $('#modalMensajeError').find('.modal-body').text('El valor debe de ser mayor a 0').end().modal('show');
+                        $('#generarMateria').prop('disabled', false);
                     }
                     else {
 
 
+                        var kilos = 0;
+
+                        if (idUnidad == 2)//metro
+                        {
+                            kilos = pesoTeorico * metros * utilizadosM;
+                        }
+                        else if (idUnidad == 3) //kilos
+                        {
+                            kilos = utilizadosM;
+                        }
+                        else {
+                            kilos = utilizadosM;
+                        }
 
 
-                        $.ajax({
-                            url: 'validaCodigo.php',
-                            type: 'post',
-                            data: {
-                                codigo: codigo,
-                                idProducto: idProducto,
-                                utilizadosM: kilos
-                            },
-                            dataType: 'json',
-                            success: function (response) {
+                        if (idUnidad == 1) {
+                            $.ajax({
+                                url: 'generarMateria.php',
+                                type: 'post',
+                                data: {
+                                    idCotizacionDetM: idCotizacionDetM,
+                                    kilos: kilos,
+                                    idProducto: idProducto,
+                                    codigo: codigo,
+                                    utilizadosUsM: utilizadosUsM,
+                                    idAlmacen: idAlmacen,
+                                    utilizadosM: utilizadosM
+                                },
+                                dataType: 'json',
+                                success: function (response) {
+
+                                    if (response.exito) {
+
+                                        $('#modalProducirMateria').modal('hide');
+
+                                        window.location = 'index.php?p=producciones'
+                                    }
+                                    else {
+                                        $('#modalMensajeError').find('.modal-body').text(response.mensaje).end().modal('show');
+                                        $('#generarMateria').prop('disabled', false);
+                                    }
 
 
 
-                                if (response.exito) {
-                                    $.ajax({
-                                        url: 'generarMateria.php',
-                                        type: 'post',
-                                        data: {
-                                            idCotizacionDetM: idCotizacionDetM,
-                                            kilos: kilos,
-                                            idProducto: idProducto,
-                                            codigo: codigo,
-                                            utilizadosUsM: utilizadosUsM,
-                                            idAlmacen: idAlmacen,
-                                            utilizadosM: utilizadosM
-                                        },
-                                        dataType: 'json',
-                                        success: function (response) {
-
-
-
-                                            $('#modalProducirMateria').modal('hide');
-
-                                            window.location = 'index.php?p=producciones'
-
-
-
-
-                                        },
-                                        error: function (request, status, error) {
-                                            alert(request.responseText);
-                                        }
-                                    });
+                                },
+                                error: function (request, status, error) {
+                                    alert(request.responseText);
                                 }
-                                else {
-                                    $('#modalMensajeError').find('.modal-body').text(response.mensaje).end().modal('show');
+                            });
+                        }
+                        else {
+
+
+
+
+                            $.ajax({
+                                url: 'validaCodigo.php',
+                                type: 'post',
+                                data: {
+                                    codigo: codigo,
+                                    idProducto: idProducto,
+                                    utilizadosM: kilos
+                                },
+                                dataType: 'json',
+                                success: function (response) {
+
+
+
+                                    if (response.exito) {
+                                        $.ajax({
+                                            url: 'generarMateria.php',
+                                            type: 'post',
+                                            data: {
+                                                idCotizacionDetM: idCotizacionDetM,
+                                                kilos: kilos,
+                                                idProducto: idProducto,
+                                                codigo: codigo,
+                                                utilizadosUsM: utilizadosUsM,
+                                                idAlmacen: idAlmacen,
+                                                utilizadosM: utilizadosM
+                                            },
+                                            dataType: 'json',
+                                            success: function (response) {
+
+
+
+                                                $('#modalProducirMateria').modal('hide');
+
+                                                window.location = 'index.php?p=producciones'
+
+
+
+
+                                            },
+                                            error: function (request, status, error) {
+                                                alert(request.responseText);
+                                                $('#generarMateria').prop('disabled', false);
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        $('#modalMensajeError').find('.modal-body').text(response.mensaje).end().modal('show');
+                                        $('#generarMateria').prop('disabled', false);
+                                    }
+
+
+
+
+                                },
+                                error: function (request, status, error) {
+                                    alert(request.responseText);
+                                    $('#generarMateria').prop('disabled', false);
                                 }
+                            });
+                        }
 
 
 
 
-                            },
-                            error: function (request, status, error) {
-                                alert(request.responseText);
-                            }
-                        });
+
+
+
+
+
                     }
-
-
-
-
-
-
-
-
-
                 }
+            }
+            else {
+                $('#modalMensajeError').find('.modal-body').text('El código escaneado debe ser una Recepción "R" o una Devolución "D"').end().modal('show');
+                $('#generarMateria').prop('disabled', false);
             }
         }
         else {
-            $('#modalMensajeError').find('.modal-body').text('El código escaneado debe ser una Recepción "R" o una Devolución "D"').end().modal('show');
+            $('#modalMensajeError').find('.modal-body').text('La cantidad real usada es obligatoria').end().modal('show');
+            $('#generarMateria').prop('disabled', false);
         }
 
     });

@@ -167,6 +167,7 @@ $producciones = $respuesta->registros;
                                             <input class="unidad" type="hidden" value="<?php echo $det['unidad'] ?>">
                                             <input class="idUnidad" type="hidden" value="<?php echo $det['idUnidad'] ?>">
                                             <input class="metros" type="hidden" value="<?php echo $det['metros'] ?>">
+                                            <input class="largoancho" type="hidden" value="<?php echo $largoancho ?>">
                                             <input class="cantidad" type="hidden" value="<?php echo $det['cantidad'] ?>">
                                             <input class="cantidadProcesada" type="hidden" value="<?php echo $det['cantidadProcesada'] ?>">
                                             <input class="pesoTeorico" type="hidden" value="<?php echo $det['pesoTeorico'] ?>"><a href="#" style="font-size: 14px;" class="btn btn-primary" data-role="llenarProduccion" data-id="<?php echo $det['idCotizacionDet'] ?>">Generar Producto Terminado</a></td>
@@ -223,7 +224,8 @@ $producciones = $respuesta->registros;
                             <th>Cantidad</th>
 
                             <th>Unidad</th>
-                            <th>Kilos</th>
+                            <th>Kilos Teórico</th>
+                            <th>Kilos Real</th>
                             <th>Usuario</th>
                             <th>Fecha</th>
                             <th>Reimprimir</th>
@@ -271,6 +273,7 @@ $producciones = $respuesta->registros;
 
                                 <td><?php echo strtoupper($reg['unidadFactura']) ?></td>
                                 <td><?php echo number_format($reg['kilos'], 2, '.', ',') ?></td>
+                                <td><?php echo number_format($reg['kilosUsuario'], 2, '.', ',') ?></td>
                                 <td><?php echo strtoupper($reg['usuario']) ?></td>
                                 <td><?php echo strtoupper($reg['fecha']) ?></td>
 
@@ -307,14 +310,16 @@ $producciones = $respuesta->registros;
     });
 
     $(document).ready(function() {
+      
+
         $('#ultimasproducciones').DataTable({
+            scrollY: '35vh',
+            scrollCollapse: true,
+            paging: false,
             "order": [
-                [9, "desc"]
-            ],
-            "lengthMenu": [
-                [-1, 100, 200],
-                ["Todos", 100, 200]
+                [11, "desc"]
             ]
+            
         });
     });
 </script>

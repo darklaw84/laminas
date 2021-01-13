@@ -431,6 +431,10 @@ $productos = $respuesta->registros;
 
                         <?php
                         $cont = 1;
+                        $cantidadTotal=0;
+
+                        $totalMetrosLineales=0;
+                        $totalPesoTeorico=0;
                         foreach ($productosOrden as $reg) {
                             $mostrarbotonMetros = true;
                             if (is_numeric($reg['largo'])) {
@@ -451,6 +455,33 @@ $productos = $respuesta->registros;
                                     $metrosLineales = 0;
                                 }
                             }
+
+                            $cantidadTotal=$cantidadTotal+$reg['cantidad'];
+
+                            
+                            $totalMetrosLineales = $totalMetrosLineales + $metrosLineales;
+
+                                $pesoTeorico=0;
+
+                            if ($reg['idUnidad'] == 3) {
+                                $pesoTeorico=$totalPesoTeorico+ $reg['cantidad'];
+                            } else if ($reg['idUnidad'] == 1) {
+                                $pesoTeorico=$totalPesoTeorico+ ($reg['pesoTeorico'] * $reg['cantidad']);
+                                
+                            } else {
+                                if ($metrosLineales == 0) {
+
+                                    $pesoTeorico=$totalPesoTeorico+ ($reg['pesoTeorico'] * $reg['cantidad']);
+                                    
+                                } else {
+                                    $pesoTeorico=$totalPesoTeorico+ ($reg['pesoTeorico'] * $metrosLineales);
+                                    
+                                }
+                            }
+
+
+
+                            $totalPesoTeorico = $totalPesoTeorico + $pesoTeorico;
 
                         ?>
                             <tr>
@@ -490,6 +521,18 @@ $productos = $respuesta->registros;
 
 
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" style="text-align:right">Total:</th>
+                            <th ><?php echo $cantidadTotal; ?> </th>
+                            <th colspan="4" style="text-align:right">Total:</th>
+                            <th><?php echo $totalMetrosLineales; ?> </th>
+                            <th><?php echo $totalPesoTeorico; ?> </th>
+
+
+
+                        </tr>
+                    </tfoot>
 
                 </table>
 
@@ -613,13 +656,4 @@ $productos = $respuesta->registros;
         </div>
         <?php include_once('footer.php') ?>
     </div>
-    <script>
-        $(document).ready(function() {
-            $('#cotizacionesdet').DataTable({
-                "lengthMenu": [
-                    [100, 200, -1],
-                    [100, 200, "Todos"]
-                ]
-            });
-        });
-    </script>
+    

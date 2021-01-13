@@ -20,6 +20,8 @@ if (isset($idRemision)) {
         $camion = $respPro->registros[0]['camion'];
         $placas = $respPro->registros[0]['placas'];
         $operador = $respPro->registros[0]['operador'];
+        $lugarentrega = $respPro->registros[0]['lugarentrega'];
+        
         $vendedor = $respPro->registros[0]['vendedor'];
         
         $detalleRemision = $respPro->registros[0]['detalle'];
@@ -86,7 +88,7 @@ class PDF extends FPDF
     function Header()
     {
         // Logo
-        $this->Image('./imagenes/logo.jpg', 10, 6, 40, 22);
+        $this->Image('./imagenes/logo.jpg', 10, 6, 30, 20);
         // Arial bold 15
         $this->SetFont('Arial', 'B', 15);
         // Move to the right
@@ -178,7 +180,7 @@ $pdf->uso = $respPro->registros[0]['uso'];
 $pdf->direccion = $respPro->registros[0]['direccion'];
 $pdf->fechaEntrega = $respPro->registros[0]['fechaEntrega'];
 $pdf->representante = $respPro->registros[0]['representante'];
-$pdf->direccionentrega = $respPro->registros[0]['direccionentrega'];
+$pdf->direccionentrega = $lugarentrega;
 $pdf->telefono = $respPro->registros[0]['telefono'];
 $pdf->mail = $respPro->registros[0]['mail'];
 
@@ -188,10 +190,10 @@ $pdf->AliasNbPages();
 $pdf->AddPage('L');
 $pdf->SetFont('Arial', '', 7);
 $contador = 1;
-
+$cantidadTotal =0;
 
 foreach ($detalleRemision as $reg) {
-
+$cantidadTotal = $cantidadTotal+$reg['cantidad'];
     if (is_numeric($reg['largo'])) {
         $largoancho = $reg['largo'] . " " . $reg['ancho'];;
     } else {
@@ -209,7 +211,7 @@ foreach ($detalleRemision as $reg) {
     }
     $pdf->SetX(5);
     $pdf->Cell(10, 6, $contador, $bor, 0, 'C', true);
-    $pdf->Cell(16, 6, $reg['cantidad'], $bor, 0, 'C', true);
+    $pdf->Cell(16, 6, number_format($reg['cantidad'], 2, '.', ','), $bor, 0, 'C', true);
     $pdf->Cell(18, 6, $reg['unidadFactura'], $bor, 0, 'C', true);
     $pdf->Cell(168, 6, strtoupper($reg['producto'] . " " . $reg['calibre'] . " " . $reg['tipo']), $bor, 0, 'C', true);
   
@@ -258,6 +260,10 @@ $iva = $grantotal * .16/1.16;
 
 
 
+
+$pdf->SetX(5);
+$pdf->Cell(10, 6, "Tot:", $bor, 0, 'C', true);
+$pdf->Cell(16, 6,  number_format($cantidadTotal, 2, '.', ','), $bor, 0, 'C', true);
 $pdf->SetX(244);
 $pdf->Cell(26, 6, "SUBTOTAL", $bor, 0, 'C');
 $pdf->Cell(22, 6, "$ " . number_format($subtotal - $descuento, 2, '.', ','), $bor, 1, 'C');

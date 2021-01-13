@@ -72,145 +72,18 @@ $clientes = $respClientes->registros;
             </div>
         </div>
 
-        <div class="main-card mb-3 card">
-            <div class="card-body">
-                <h2>Pedidos Activos</h2>
-                <table style="width: 100%;" id="pedidos" class="table table-hover table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th># Ped.</th>
-                            <th>Cliente</th>
-                            <th>Usuario</th>
-                            <th>Fecha Entrega</th>
-                            <th>Forma Pago</th>
-                            <th>Total</th>
-                            <th>Abonos</th>
-                            <th>Partidas</th>
-                            <th>Fase</th>
-                            <th>Prioridad</th>
-                            <th>Pagado</th>
-                            <th>Cancelar</th>
+      
 
 
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($registros as $reg) {
+      
 
 
-
-
-                            $diaS = "";
-                            $tieneProducciones = false;
-                            $todasConRemisiones = true;
-                            $tieneRemisiones = false;
-                            foreach ($reg['productos'] as $prod) {
-                                if (!$prod['todasConRemisiones']) {
-                                    $todasConRemisiones = false;
-                                }
-                                if ($prod['tieneRemision']) {
-                                    $tieneRemisiones = true;
-                                }
-                                if (count($prod['producciones']) > 0) {
-                                    $tieneProducciones = true;
-                                    break;
-                                }
-                            }
-
-                            if (!$todasConRemisiones && $reg['cancelado'] != "1") {
-
-
-
-                        ?>
-                                <tr id="<?php echo $reg['idCotizacion']; ?>">
-
-
-                                    <td><?php echo $reg['idCotizacion'] ?></td>
-                                    <td><?php echo strtoupper($reg['cliente']) ?></td>
-                                    <td><?php echo strtoupper($reg['usuario']) ?></td>
-                                    <td><?php echo  $reg['fechaEntrega'] ?></td>
-                                    <td><?php echo $reg['formapago'] ?></td>
-
-                                    <td><?php if ($reg['costoEnvio'] == "") {
-                                            $reg['costoEnvio'] = 0;
-                                        }
-                                        echo "$ " . number_format($reg['grantotal'] + $reg['costoEnvio'], 2, '.', ',') ?></td>
-                                    <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="AB<?php echo $reg['idCotizacion'] ?>" class="mr-2 mb-2 btn btn-warning"><?php echo "$ " . number_format($reg['totalAbonos'], 2, '.', ',') ?> </button></td>
-                                    <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="<?php echo $reg['idCotizacion'] ?>" class="mr-2 mb-2 btn btn-dark"><?php echo count($reg['productos'], COUNT_NORMAL) ?> Partidas</button>
-                                        <?php if ($reg['terminada']) { ?><img src="./imagenes/correcto.png" style="height: 20px"><?php } ?></td>
-                                    <td>
-
-
-                                        <?php if (!$tieneProducciones) {
-                                            if (isset($_SESSION['autorizarPedidos']) && $_SESSION['autorizarPedidos'] == "1") { ?><a href="#" data-role="autorizarProduccion" data-id="<?php if ($reg['produccion'] == 1) {
-                                                                                                                                                                                            echo $reg['idCotizacion'] . "-1";
-                                                                                                                                                                                        } else {
-                                                                                                                                                                                            echo $reg['idCotizacion'] . "-0";
-                                                                                                                                                                                        } ?>" style="font-size: 10px;" <?php if ($reg['produccion'] == 0) {
-                                                                                                                                                                                                                            echo "Class='btn btn-primary'";
-                                                                                                                                                                                                                        } else {
-                                                                                                                                                                                                                            echo "Class='btn btn-danger'";
-                                                                                                                                                                                                                        } ?>><?php if ($reg['produccion'] == 0) {
-                                                                                                                                                                                                                                    echo " Autorizar Producción";
-                                                                                                                                                                                                                                } else {
-                                                                                                                                                                                                                                    echo "Cancelar Producción";
-                                                                                                                                                                                                                                } ?></a><?php }
-                                                                                                                                                                                                                                } else {
-                                                                                                                                                                                                                                    if ($todasConRemisiones) {
-                                                                                                                                                                                                                                        echo "Entregado";
-                                                                                                                                                                                                                                    } else if ($tieneRemisiones) {
-                                                                                                                                                                                                                                        echo "Parcialmente Entregado";
-                                                                                                                                                                                                                                    } else {
-                                                                                                                                                                                                                                        echo  "Con Producciones";
-                                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                                } ?></td>
-                                    <td><a href="#" title="Alta" data-role="ponerVerde" data-id="<?php echo $reg['idCotizacion'] ?>">
-                                            <img class="verde" src="./imagenes/<?php if ($reg['semaforo'] == "V") {
-                                                                                    echo "verde";
-                                                                                } else {
-                                                                                    echo "verdeg";
-                                                                                } ?>.jpg" height="20px"></a>
-                                        <a href="#" title="Media" data-role="ponerAmarillo" data-id="<?php echo $reg['idCotizacion'] ?>">
-                                            <img class="amarillo" src="./imagenes/<?php if ($reg['semaforo'] == "A") {
-                                                                                        echo "amarillo";
-                                                                                    } else {
-                                                                                        echo "amarillog";
-                                                                                    } ?>.jpg" height="20px"></a>
-                                        <a href="#" title="Baja" data-role="ponerRojo" data-id="<?php echo $reg['idCotizacion'] ?>">
-                                            <img class="rojo" src="./imagenes/<?php if ($reg['semaforo'] == "R") {
-                                                                                    echo "rojo";
-                                                                                } else {
-                                                                                    echo "rojog";
-                                                                                } ?>.jpg" height="20px"></a>
-                                    </td>
-                                    <td><?php if ($reg['pedidoPagado']) {
-                                            echo "Pagado";
-                                        } else {
-                                            echo "Pendiente de pagar";
-                                        } ?></td>
-                                    <td>
-                                        <?php
-                                        if (!$tieneProducciones && ($reg['idUsuario'] == $_SESSION['idUsr'] || $_SESSION['cancelarPedidos'] == "1")) {
-                                        ?>
-                                            <a href="#" class="btn btn-warning" data-role="cancelarPedido" data-id="<?php echo $reg['idCotizacion'] ?>">Cancelar</a>
-                                        <?php } ?>
-                                    </td>
-
-                                </tr>
-                        <?php }
-                        } ?>
-
-                    </tbody>
-
-                </table>
-            </div>
-        </div>
 
 
         <div class="main-card mb-3 card">
             <div class="card-body">
-                <h2>Pedidos Entregados No Pagados</h2>
-                <table style="width: 100%;" id="pedidosentregados" class="table table-hover table-striped table-bordered">
+                <h2>Pedidos Entregados Pagados</h2>
+                <table style="width: 100%;" id="pedidosentregadospagados" class="table table-hover table-striped table-bordered">
                     <thead>
                         <tr>
                             <th># Ped.</th>
@@ -230,8 +103,7 @@ $clientes = $respClientes->registros;
                     </thead>
                     <tbody>
                         <?php foreach ($registros as $reg) {
-
-                            if (!$reg['pedidoPagado']) {
+                            if ($reg['pedidoPagado']) {
 
                                 $diaS = "";
                                 $tieneProducciones = false;
@@ -324,13 +196,6 @@ $clientes = $respClientes->registros;
                 </table>
             </div>
         </div>
-
-
-
-
-
-
-      
 
 
         <?php foreach ($registros as $reg) { ?>
@@ -458,8 +323,10 @@ $clientes = $respClientes->registros;
     <?php include_once('footer.php') ?>
 </div>
 <script>
+  
+
     $(document).ready(function() {
-        $('#pedidos').DataTable({
+        $('#pedidosentregadospagados').DataTable({
             "order": [
                 [0, "desc"]
             ],
@@ -469,18 +336,4 @@ $clientes = $respClientes->registros;
             ]
         });
     });
-
-    $(document).ready(function() {
-        $('#pedidosentregados').DataTable({
-            "order": [
-                [0, "desc"]
-            ],
-            "lengthMenu": [
-                [-1, 100, 200],
-                ["Todos", 100, 200]
-            ]
-        });
-    });
-
-    
 </script>

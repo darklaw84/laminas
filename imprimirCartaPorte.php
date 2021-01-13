@@ -209,7 +209,7 @@ $pdf->uso = $respPro->registros[0]['uso'];
 $pdf->direccion = $respPro->registros[0]['direccion'];
 $pdf->fechaEntrega = $respPro->registros[0]['fechaEntrega'];
 $pdf->representante = $respPro->registros[0]['representante'];
-$pdf->direccionentrega = $respPro->registros[0]['direccionentrega'];
+$pdf->direccionentrega = $lugarentrega;
 $pdf->telefono = $respPro->registros[0]['telefono'];
 $pdf->mail = $respPro->registros[0]['mail'];
 $pdf->nombreUsuario = $respPro->registros[0]['nombreUsuario'];
@@ -224,9 +224,10 @@ $contador = 1;
 
 $totalMetros = 0;
 $kilosTotales = 0;
+$cantidadTotal=0;
 
 foreach ($detalleRemision as $reg) {
-
+$cantidadTotal=$cantidadTotal+$reg['cantidad'];
     if (is_numeric($reg['largo'])) {
         $largo = $reg['largo'];
         $largoancho = $reg['largo'] . " " . $reg['ancho'];
@@ -300,8 +301,9 @@ for ($i = $contador; $i <= 10; $i++) {
 $pdf->SetX(5);
 $pdf->SetFillColor(50);
 $pdf->SetTextColor(255, 255, 255);
-$pdf->Cell(10, 6, '', $bor, 0, 'C', true);
-$pdf->Cell(16, 6, '', $bor, 0, 'C', true);
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(10, 6, 'Tot:', $bor, 0, 'C', true);
+$pdf->Cell(16, 6, $cantidadTotal, $bor, 0, 'C', true);
 $pdf->Cell(18, 6, '', $bor, 0, 'C', true);
 $pdf->Cell(161, 6, '', $bor, 0, 'C', true);
 

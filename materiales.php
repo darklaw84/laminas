@@ -39,6 +39,16 @@ $ordenes = $respuesta->registros;
 
         <!-- aqui va el contenido de la página -->
 
+        <div class="row mt-2 mb-2">
+            <div class="col-md-10">
+            </div>
+
+            <div class="col-md-2">
+                <a href="generarExcelMaterialesDetalle.php" target="_blank" class="btn btn-success"> Exportar Detalle XLSX
+                </a>
+            </div>
+        </div>
+
         <div class="main-card mb-3 card">
             <div class="card-body">
                 <table style="width: 100%;" id="materiales" class="table table-hover table-striped table-bordered ">
@@ -52,6 +62,7 @@ $ordenes = $respuesta->registros;
                             <th>Peso Teórico</th>
 
                             <th>Recibido</th>
+                            <th>Fecha Recepción</th>
                             <th>Recepciones</th>
                             <th>Usuario</th>
 
@@ -64,20 +75,42 @@ $ordenes = $respuesta->registros;
                                 $orde = $ord['orden'][0];
                                 if (is_numeric($det['largo'])) {
                                     $largo = $det['largo'];
-                                    
                                 } else {
                                     $largo = "";
                                 }
+
+                                if (is_numeric($det['largo'])) {
+                                    $metrosLineales = $largo * $det['cantidad'];
+                                } else {
+                                    $metrosLineales = 0;
+                                }
+
                         ?>
                                 <tr>
 
-                                    <td>O<?php echo $orde['idOrden'] ?></td>
-                                    <td><?php echo  strtoupper($det['sku'] . " " . $det['producto'] . " " . $largo . " " . $det['ancho'] ) ?></td>
+                                    <td><?php echo $orde['idOrden'] ?></td>
+                                    <td><?php echo  strtoupper($det['sku'] . " " . $det['producto'] . " " . $largo . " " . $det['ancho']) ?></td>
                                     <td><?php echo strtoupper($det['calibre']) ?></td>
                                     <td><?php echo strtoupper($det['tipo']) ?></td>
                                     <td><?php echo strtoupper($det['unidad']) ?></td>
-                                    <td><?php echo $det['pesoTeorico'] ?></td>
-                                    <td><?php if ($det['recibido'] == "1") { ?><img src="./imagenes/correcto.png" style="height: 20px"><?php } else { ?><img src="./imagenes/incorrecto.png" style="height: 20px"><?php } ?></td>
+                                    <td><?php if ($det['idUnidad'] == 3) {
+                                            echo number_format($det['cantidad'], 2, '.', ',');
+                                        } else if ($det['idUnidad'] == 1) {
+                                            if ($det['prodPesoTeorico'] > 0) {
+                                                echo number_format($det['prodPesoTeorico'] * $det['cantidad'], 2, '.', ',');
+                                            } else {
+                                                echo number_format($det['pesoTeorico'] * $det['cantidad'], 2, '.', ',');
+                                            }
+                                        } else {
+                                            if ($metrosLineales == 0) {
+                                                echo number_format($det['pesoTeorico'] * $det['cantidad'], 2, '.', ',');
+                                            } else {
+                                                echo number_format($det['pesoTeorico'] * $metrosLineales, 2, '.', ',');
+                                            }
+                                        }  ?></td>
+                                    <td><?php if ($det['recibido'] == "1") {
+                                            echo "."; ?><img src="./imagenes/correcto.png" style="height: 20px"><?php } else { ?><img src="./imagenes/incorrecto.png" style="height: 20px"><?php } ?></td>
+                                    <td><?php echo $det['fechaUltimaRecepcion']; ?></td>
                                     <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="<?php echo $det['idOrdenCompraDet'] ?>" class="mr-2 mb-2 btn btn-dark"><?php echo count($det['recepciones'], COUNT_NORMAL) ?> Recepciones</button></td>
                                     <td><?php echo strtoupper($orde['usuario']) ?></td>
                                 </tr>
@@ -115,8 +148,6 @@ $ordenes = $respuesta->registros;
                                 <th>Unidad</th>
                                 <th>Cant Ordenada</th>
                                 <th>Cant Recibida</th>
-                                <th>Peso Ordenado</th>
-                                <th>Peso Recibido</th>
                                 <th>Usuario</th>
                                 <th>Fecha</th>
                                 <th>Almacen</th>
@@ -127,20 +158,35 @@ $ordenes = $respuesta->registros;
                         </thead>
                         <tbody>
 
-                            <?php foreach ($reg['recepciones'] as $ins) { ?>
+                            <?php foreach ($reg['recepciones'] as $ins) {
+
+                                $ordenada = 0;
+                                $recibida = 0;
+                                if ($ins['idUnidad'] == 3) {
+                                    $ordenada = $reg['pesoTeorico'];
+                                    $recibida = $ins['peso'];
+                                } else if ($ins['idUnidad'] == 2) {
+                                    $ordenada = $reg['cantidad'];
+                                    $recibida = $ins['cantidad'];
+                                } else {
+                                    $ordenada = $reg['cantidad'];
+                                    $recibida = $ins['cantidad'];
+                                }
+
+                            ?>
                                 <tr id="R<?php echo $ins['idRecepcion'] ?>">
                                     <td>R<?php echo $ins['idRecepcion'] ?></td>
                                     <td><?php echo $ins['producto'] . " " . $ins['calibre'] . " " . $ins['tipo'] ?></td>
                                     <td><?php echo $ins['unidad'] ?></td>
-                                    <td><?php echo $reg['cantidad'] ?></td>
-                                    <td><?php echo $ins['cantidad'] ?></td>
-                                    <td><?php echo $reg['pesoTeorico'] ?></td>
-                                    <td><?php echo $ins['peso'] ?></td>
+                                    <td><?php echo $ordenada ?></td>
+                                    <td><?php echo $recibida ?></td>
+
                                     <td><?php echo $ins['usuarioRecibe'] ?></td>
                                     <td><?php echo $ins['fechaRecibe'] ?></td>
                                     <td><?php echo $ins['almacen'] ?></td>
                                     <td><a href="#" class="btn btn-warning" data-role="reimprimeRecepcion" data-id="<?php echo $ins['idRecepcion'] ?>">Reimprimir</a></td>
 
+                                    <td><a href="#" class="btn btn-warning" data-role="eliminaRecepcion" data-id="<?php echo $ins['idRecepcion'] ?>">Eliminar</a>
                                 </tr>
                             <?php } ?>
 

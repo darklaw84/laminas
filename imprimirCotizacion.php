@@ -24,6 +24,11 @@ if (isset($idCotizacion)) {
         $fecha = $respPro->registros[0]['fecha'];
         $uso = $respPro->registros[0]['uso'];
         $costoEnvio = $respPro->registros[0]['costoEnvio'];
+        $usuarioTel = $respPro->registros[0]['usuarioTel'];
+        $usuarioMail = $respPro->registros[0]['usuarioMail'];
+
+        $nombreUsuario = $respPro->registros[0]['nombreUsuario'];
+        $apellidosUsuario = $respPro->registros[0]['apellidos'];
 
 
 
@@ -159,7 +164,8 @@ $pdf->uso = $respPro->registros[0]['uso'];
 $pdf->direccion = $respPro->registros[0]['direccion'];
 $pdf->fechaEntrega = $respPro->registros[0]['fechaEntrega'];
 $pdf->representante = $respPro->registros[0]['representante'];
-$pdf->direccionentrega = $respPro->registros[0]['direccionentrega'];
+//$pdf->direccionentrega = $respPro->registros[0]['direccionentrega'];
+$pdf->direccionentrega = $lugarentrega;
 $pdf->telefono = $respPro->registros[0]['telefono'];
 $pdf->mail = $respPro->registros[0]['mail'];
 
@@ -170,9 +176,9 @@ $pdf->AddPage('L');
 $pdf->SetFont('Arial', '', 7);
 $contador = 1;
 $altodetalle = 5;
-
+$cantidadTotal = 0;
 foreach ($productosCotizacion as $reg) {
-
+    $cantidadTotal = $cantidadTotal + $reg['cantidad'];
     if (is_numeric($reg['largo'])) {
         if ($reg['medidasreves'] == "1") {
             $largoancho = $reg['ancho'] . " " . $reg['largo'] . " M";;
@@ -223,7 +229,7 @@ if ($contador % 2 == 0) {
 if ($costoEnvio > 0) {
     $pdf->SetX(10);
     $pdf->Cell(15, $altodetalle, $contador, $bor, 0, 'C', true);
-    $pdf->Cell(20, $altodetalle, "1", $bor, 0, 'C', true);
+    $pdf->Cell(20, $altodetalle, "", $bor, 0, 'C', true);
     $pdf->Cell(20, $altodetalle, "", $bor, 0, 'C', true);
     $pdf->Cell(120, $altodetalle, utf8_decode("MANIOBRAS"), $bor, 0, 'C', true);
 
@@ -235,7 +241,7 @@ if ($costoEnvio > 0) {
 
     $pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', true);
     $pdf->Cell(27, $altodetalle, number_format($costoEnvio / 1.16, 2, '.', ','), 'BTR', 1, 'R', true);
-    $subtotal = $subtotal + ($costoEnvio/1.16);
+    $subtotal = $subtotal + ($costoEnvio / 1.16);
 }
 
 $gris = 230;
@@ -258,9 +264,13 @@ $iva = $grantotal * .16 / 1.16;
 
 
 
-$pdf->SetX(225);
+
 $pdf->SetFont('Arial', 'B', 7);
 $pdf->SetFillColor($gris);
+$pdf->SetX(10);
+$pdf->Cell(15, $altodetalle, "TOTAL", $bor, 0, 'C', true);
+$pdf->Cell(20, $altodetalle,  number_format($cantidadTotal, 2, '.', ','), $bor, 0, 'C', true);
+$pdf->SetX(225);
 $pdf->Cell(30,  $altodetalle, "SUBTOTAL", $bor, 0, 'C', true);
 $pdf->SetFont('Arial', '', 7);
 $pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', true);
@@ -338,13 +348,14 @@ if ($formapago != "") {
     $pdf->SetFont('Arial', '', $letra);
     $pdf->Cell(155, $alto, strtoupper(utf8_decode($formapago)), $bori, 1, 'L');
 }
-if ($uso != "") {
+/*if ($uso != "") {
     $pdf->SetX($izq);
     $pdf->SetFont('Arial', 'B', $letra);
     $pdf->Cell(30, $alto, utf8_decode("CFDI:"), $bori, 0, 'R');
     $pdf->SetFont('Arial', '', $letra);
     $pdf->Cell(155, $alto, strtoupper(utf8_decode($uso)), $bori, 1, 'L');
 }
+*/
 
 
 $pdf->SetFont('Arial', 'B', $letrac);
@@ -399,7 +410,7 @@ $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', $letra);
 $pdf->Cell(30, $alto, utf8_decode(""), $bori, 0, 'R');
 $pdf->SetFont('Arial', 'B', $letra);
-$pdf->Cell(155, $alto, utf8_decode($usuario['nombre'] . " " . $usuario['apellidos']), $bori, 0, 'L');
+$pdf->Cell(155, $alto, utf8_decode($nombreUsuario . " " . $apellidosUsuario), $bori, 0, 'L');
 
 $pdf->SetFont('Arial', 'BU', $letrac);
 $pdf->SetX(225);
@@ -412,7 +423,7 @@ $pdf->SetX($izq);
 $pdf->SetFont('Arial', 'B', $letra);
 $pdf->Cell(30, $alto, utf8_decode(""), $bori, 0, 'R');
 $pdf->SetFont('Arial', '', 7);
-$pdf->Cell(155, $alto, utf8_decode($usuario['correo'] . "    -     " . $usuario['telefono']), $bori, 0, 'L');
+$pdf->Cell(155, $alto, utf8_decode($usuarioTel . "    -     " . $usuarioMail), $bori, 0, 'L');
 
 
 $pdf->SetFont('Arial', '', $letrac);

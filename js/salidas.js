@@ -12,7 +12,7 @@ $(document).ready(function () {
             $('#imprimirCartaPorte').text('Imprimir Carta Porte');
         }
 
-        var idCorrecto = (''+ id).replace('R', '');
+        var idCorrecto = ('' + id).replace('R', '');
 
         $.ajax({
             url: 'obtenerDatosCartaPorte.php',
@@ -22,10 +22,10 @@ $(document).ready(function () {
             },
             dataType: 'json',
             success: function (response) {
-                $('#placasM').val(response.placas);
-                $('#operadorM').val(response.operador);
+                $('#idCamionCP').val(response.placas);
+                $('#idChoferCP').val(response.operador);
                 $('#tipoUnidadM').val(response.tipoUnidad);
-                $('#contenedorM').val(response.contenedor);
+                // $('#contenedorM').val(response.contenedor);
                 $('#idRemisionM').val(id);
 
                 $('#modalCartaPorte').modal('toggle');
@@ -81,7 +81,7 @@ $(document).ready(function () {
             $('#imprimirCartaPorte').text('Imprimir Carta Porte');
         }
 
-        var idCorrecto = (''+id).replace('R', '');
+        var idCorrecto = ('' + id).replace('R', '');
 
         $.ajax({
             url: 'obtenerDatosCartaPorte.php',
@@ -91,10 +91,10 @@ $(document).ready(function () {
             },
             dataType: 'json',
             success: function (response) {
-                $('#placasM').val(response.placas);
-                $('#operadorM').val(response.operador);
+                $('#idCamionCP').val(response.placas);
+                $('#idChoferCP').val(response.operador);
                 $('#tipoUnidadM').val(response.tipoUnidad);
-                $('#contenedorM').val(response.contenedor);
+                //   $('#contenedorM').val(response.contenedor);
                 $('#idRemisionM').val(id);
 
                 $('#modalCartaPorte').modal('toggle');
@@ -153,7 +153,7 @@ $(document).ready(function () {
             data: {
                 id: id,
                 idAlmacenTraspaso: idAlmacenTraspaso,
-                idChofer:idChofer
+                idChofer: idChofer
             },
             dataType: 'json',
             success: function (almacenes) {
@@ -180,7 +180,7 @@ $(document).ready(function () {
         var placas = $('#idCamionCP').val();
         var operador = $('#idChoferCP').val();
         var unidad = $('#tipoUnidadM').val();
-        var contenedor = $('#contenedorM').val();
+        var contenedor = '';
         var id = $('#idRemisionM').val();
 
         var idCorrecto = id.replace('R', '');

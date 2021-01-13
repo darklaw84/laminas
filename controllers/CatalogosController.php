@@ -369,6 +369,15 @@ class CatalogosController
         return $respuesta;
     }
 
+    function obtenerClientesActivos()
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->obtenerClientesActivos();
+        return $respuesta;
+    }
+
     function obtenerUsos()
     {
         $database = new Database();
@@ -579,6 +588,15 @@ class CatalogosController
         $db = $database->getConnection();
         $clase = new CatalogosModel($db);
         $respuesta = $clase->obtenerProveedores();
+        return $respuesta;
+    }
+
+    function obtenerProveedoresActivos()
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CatalogosModel($db);
+        $respuesta = $clase->obtenerProveedoresActivos();
         return $respuesta;
     }
 

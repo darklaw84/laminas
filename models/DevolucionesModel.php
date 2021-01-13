@@ -63,6 +63,81 @@ class DevolucionesModel
         }
     }
 
+    function eliminarDevolucion($idDevolucion)
+    {
+
+        $respuesta = new RespuestaBD();
+
+
+
+
+        $respuesta = $this->validarDevolucionSinUso($idDevolucion);
+        // check if more than 0 record found
+        if ($respuesta->exito) {
+
+
+
+            // query to insert record
+            $query = "delete from devoluciones where idDevolucion = " . $idDevolucion;
+
+            // prepare query
+            $stmt = $this->conn->prepare($query);
+
+
+
+
+            // execute query
+            if ($stmt->execute()) {
+
+                $respuesta->exito = true;
+                $respuesta->mensaje = "";
+
+                return $respuesta;
+            } else {
+                $respuesta->exito = false;
+                $mensaje = $stmt->errorInfo();
+                $respuesta->mensaje = "Ocurrió un problema eliminando";
+                return $respuesta;
+            }
+        } else {
+            return $respuesta;
+        }
+    }
+
+    function validarDevolucionSinUso($idDevolucion)
+    {
+
+
+        $query = "SELECT * from devolucionesproducciones where idDevolucion = " . $idDevolucion;
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+
+
+            $respuesta->mensaje = "La devolucion ya fue utilizada, no se puede eliminar";
+            $respuesta->exito = false;
+            $respuesta->registros = "";
+        } else {
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
+
 
     function obtenerDevoluciones()
     {

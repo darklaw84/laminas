@@ -350,11 +350,29 @@ $tc = $resTC->valor;
                             <?php } ?>
                             <?php if ($_SESSION['creaCot'] == "1") { ?>
 
+
                                 <li>
-                                    <a href="index.php?p=pedidos">
-                                        <i class="pe-7s-cart metismenu-icon">
-                                        </i>Pedidos
+                                    <a href="#">
+                                        <i class=" pe-7s-copy-file metismenu-icon"></i>
+                                        Pedidos
+                                        <i class="metismenu-state-icon pe-7s-angle-down caret-left"></i>
                                     </a>
+                                    <ul>
+                                        <li>
+                                            <a href="index.php?p=pedidos">
+                                                <i class="pe-7s-cart metismenu-icon">
+                                                </i>Vigentes
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="index.php?p=pedidosp">
+                                                <i class="pe-7s-copy-file metismenu-icon">
+                                                </i>Pagados
+                                            </a>
+                                        </li>
+
+                                    </ul>
+
                                 </li>
                             <?php } ?>
                             <?php if ($_SESSION['producciones'] == "1") { ?>
@@ -483,6 +501,10 @@ $tc = $resTC->valor;
                     include_once("choferes.php");
                 } else if ($p == 'camiones') {
                     include_once("camiones.php");
+                } else if ($p == 'pedidosp') {
+                    include_once("pedidosp.php");
+                } else if ($p == 'pedidosnp') {
+                    include_once("pedidosnp.php");
                 }
             }
 
@@ -791,16 +813,17 @@ $tc = $resTC->valor;
                                                         strtoupper($uni['formaPago']) . '</option>';
                                                 }
                                             } ?>
-                                        </select> </div>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-row">
-                                <!-- <div class="col-md-6">
+                                <div class="col-md-6">
                                     <label for="vigenciaM">Lugar de Entrega </label>
                                     <div>
                                         <input type="text" maxlength="100" class="form-control" id="lugarM" name="lugarM" />
                                     </div>
-                                </div> -->
+                                </div>
                                 <div class="col-md-6">
                                     <label for="vigenciaM">Fecha de Entrega </label>
                                     <div>
@@ -862,7 +885,8 @@ $tc = $resTC->valor;
                                                         strtoupper($uni['camion'] . " " . $uni['placas']) . '</option>';
                                                 }
                                             } ?>
-                                        </select> </div>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="col-md-5">
                                     <label for="formaM">Operador </label>
@@ -875,14 +899,15 @@ $tc = $resTC->valor;
                                                         strtoupper($uni['chofer']) . '</option>';
                                                 }
                                             } ?>
-                                        </select> </div>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col-md-5">
+                                <!--  <div class="col-md-5">
                                     <label for="contenedorM">No. Contenedor </label>
                                     <div>
                                         <input type="text" maxlength="50" class="form-control" id="contenedorM" name="contenedorM" />
                                     </div>
-                                </div>
+                                </div>-->
                                 <div class="col-md-2">
                                     <label for="contenedorM">Con Peso </label>
                                     <div>
@@ -1072,13 +1097,19 @@ $tc = $resTC->valor;
                     <div class="card-body">
                         <div class="form-group">
                             <div class="form-row">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label for="tipoUnidadM">Fecha Abono</label>
+                                    <div>
+                                        <input type="date" class="form-control" id="fechaAbono" name="fechaAbono" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
                                     <label for="tipoUnidadM">Monto</label>
                                     <div>
                                         <input type="number" maxlength="10" class="form-control" id="montoAbono" name="montoAbono" />
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="clave">Forma de Pago</label>
                                     <div>
                                         <select class=" form-control " id="idFormaPagoAbono" name="idFormaPagoAbono">
@@ -1226,12 +1257,7 @@ $tc = $resTC->valor;
                             </div>
                         </div>
                         <div class="form-row mt-2">
-                            <div class="col-md-6">
-                                <label for="clave">Dirección de Entrega</label>
-                                <div>
-                                    <input type="text" maxlength="300" class="form-control" id="direccionentregaM" name="direccionentregaM" placeholder="Dirección de Entrega" />
-                                </div>
-                            </div>
+
 
                             <div class="col-md-6">
                                 <label for="clave">Tipo Precio</label>
@@ -1245,12 +1271,7 @@ $tc = $resTC->valor;
 
                         </div>
                         <div class="form-row mt-2">
-                            <div class="col-md-6">
-                                <label for="clave">Comentarios</label>
-                                <div>
-                                    <input type="text" maxlength="200" class="form-control" id="comentariosM" name="comentariosM" placeholder="Comentarios" />
-                                </div>
-                            </div>
+
                             <div class="col-md-6">
                                 <label for="clave">Tipo CFDI</label>
                                 <div>
@@ -1698,6 +1719,12 @@ $tc = $resTC->valor;
 
     ?>
 
+    <?php if (isset($_SESSION['editarProductos']) && $_SESSION['editarProductos'] == "1") {
+        $disabledProductos = "";
+    } else {
+        $disabledProductos = "disabled";
+    } ?>
+
     <div id="modalProductosUpdate" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -1718,19 +1745,19 @@ $tc = $resTC->valor;
                                 <div class="col-md-4">
                                     <label for="productoM">Producto</label>
                                     <div>
-                                        <input type="text" maxlength="100" class="form-control" id="productoM" name="productoM" placeholder="Producto" />
+                                        <input <?php echo $disabledProductos ?> type="text" maxlength="100" class="form-control" id="productoM" name="productoM" placeholder="Producto" />
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="largoM">Largo</label>
                                     <div>
-                                        <input type="text" maxlength="10" class="form-control" id="largoM" name="largoM" placeholder="Largo" />
+                                        <input <?php echo $disabledProductos ?> type="text" maxlength="10" class="form-control" id="largoM" name="largoM" placeholder="Largo" />
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="idCalibre">Ancho</label>
                                     <div>
-                                        <select class=" form-control selectAncho" name="idAnchoM" id="idAnchoM">
+                                        <select <?php echo $disabledProductos ?> class=" form-control selectAncho" name="idAnchoM" id="idAnchoM">
                                             <?php
                                             if (isset($anchos)) {
                                                 foreach ($anchos as $uni) {
@@ -1744,7 +1771,7 @@ $tc = $resTC->valor;
                                 <div class="col-md-6">
                                     <label for="idCalibre">Unidad</label>
                                     <div>
-                                        <select class=" form-control selectUnidad" name="idUnidad" id="idUnidadM">
+                                        <select <?php echo $disabledProductos ?> class=" form-control selectUnidad" name="idUnidad" id="idUnidadM">
                                             <?php
                                             if (isset($unidades)) {
                                                 foreach ($unidades as $uni) {
@@ -1758,7 +1785,7 @@ $tc = $resTC->valor;
                                 <div class="col-md-6">
                                     <label for="idUnidadFacturaM">Unidad Factura</label>
                                     <div>
-                                        <select class=" form-control selectUnidad" name="idUnidadFacturaM" id="idUnidadFacturaM">
+                                        <select <?php echo $disabledProductos ?> class=" form-control selectUnidad" name="idUnidadFacturaM" id="idUnidadFacturaM">
                                             <?php
                                             if (isset($unidades)) {
                                                 foreach ($unidades as $uni) {
@@ -1775,19 +1802,19 @@ $tc = $resTC->valor;
 
                         <div class="form-row">
                             <div class="col-md-4">
-                                <label for="idCalibre">Precio General</label>
+                                <label for="idCalibre">Precio General Sin IVA</label>
                                 <div>
-                                    <input type="number" <?php if ($_SESSION['cambiarPrecios'] != "1") {
-                                                                echo "readonly";
-                                                            } ?> step=".000001" maxlength="20" class="form-control" id="precioGenM" name="precioGenM" />
+                                    <input <?php echo $disabledProductos ?> type="number" <?php if ($_SESSION['cambiarPrecios'] != "1") {
+                                                                                                echo "readonly";
+                                                                                            } ?> step=".000001" maxlength="20" class="form-control" id="precioGenM" name="precioGenM" />
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <label for="idCalibre">Precio Revendedores</label>
+                                <label for="idCalibre">Precio Revendedores Sin IVA</label>
                                 <div>
-                                    <input type="number" <?php if ($_SESSION['cambiarPrecios'] != "1") {
-                                                                echo "readonly";
-                                                            } ?> step=".000001" maxlength="20" class="form-control" id="precioRevM" name="precioRevM" />
+                                    <input <?php echo $disabledProductos ?> type="number" <?php if ($_SESSION['cambiarPrecios'] != "1") {
+                                                                                                echo "readonly";
+                                                                                            } ?> step=".000001" maxlength="20" class="form-control" id="precioRevM" name="precioRevM" />
                                 </div>
                             </div>
                             <div class="col-6 col-md-2">
@@ -1810,7 +1837,7 @@ $tc = $resTC->valor;
                                 <div class="col-md-6">
                                     <label for="idCalibre">Calibre</label>
                                     <div>
-                                        <select class=" form-control selectCalibre" name="idCalibre" id="idCalibreM">
+                                        <select <?php echo $disabledProductos ?> class=" form-control selectCalibre" name="idCalibre" id="idCalibreM">
                                             <?php
                                             if (isset($calibres)) {
                                                 foreach ($calibres as $uni) {
@@ -1824,7 +1851,7 @@ $tc = $resTC->valor;
                                 <div class="col-md-6">
                                     <label for="idTipo">Material</label>
                                     <div>
-                                        <select class=" form-control selectTipo" name="idTipo" id="idTipoM">
+                                        <select <?php echo $disabledProductos ?> class=" form-control selectTipo" name="idTipo" id="idTipoM">
 
                                             <?php
                                             if (isset($tipos)) {
@@ -1839,7 +1866,7 @@ $tc = $resTC->valor;
                                 <div class="col-md-6">
                                     <label for="idCalibre">Materia Prima</label>
                                     <div>
-                                        <select class=" form-control " id="idMateriaPrimaM">
+                                        <select <?php echo $disabledProductos ?> class=" form-control " id="idMateriaPrimaM">
                                             <option value="0">N/A</option>
                                             <?php
                                             if (isset($productosEntrada)) {
@@ -1855,11 +1882,11 @@ $tc = $resTC->valor;
                         </div>
                         <div id="formFactorM" class="form-group">
                             <div class="form-row">
-                               
+
                                 <div class="col-md-6">
                                     <label for="idCalibre">Peso Teórico</label>
                                     <div>
-                                        <input type="number" step=".000001" maxlength="20" class="form-control" id="pesoTeoricoM" name="pesoTeoricoM" />
+                                        <input <?php echo $disabledProductos ?> type="number" step=".000001" maxlength="20" class="form-control" id="pesoTeoricoM" name="pesoTeoricoM" />
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -1885,7 +1912,7 @@ $tc = $resTC->valor;
 
                 </div>
                 <div class="modal-footer">
-                    <a href="#" id="guardarProducto" class="btn btn-primary pull-right">Actualizar</a>
+                    <a href="#" id="guardarProducto" <?php echo $disabledProductos ?> class="btn btn-primary pull-right">Actualizar</a>
                 </div>
             </div>
         </div>
@@ -2120,7 +2147,7 @@ $tc = $resTC->valor;
                                         <div>
 
 
-                                            <input type="number" class="form-control" id="utilizadosM" name="utilizadosM" />
+                                            <input type="number" step=".01" class="form-control" id="utilizadosM" name="utilizadosM" />
                                         </div>
                                     </div>
                                 </div>
@@ -2135,7 +2162,7 @@ $tc = $resTC->valor;
                                         <div>
 
 
-                                            <input type="number" class="form-control" id="utilizadosUsM" name="utilizadosUsM" />
+                                            <input type="number" step=".01" class="form-control" id="utilizadosUsM" name="utilizadosUsM" />
                                         </div>
                                     </div>
                                 </div>
@@ -2222,6 +2249,35 @@ $tc = $resTC->valor;
                 </div>
                 <div class="modal-footer">
                     <button id="btnEliminarCotizacion" class="btn btn-primary pull-right">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="modalEliminaRecepcion" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Eliminar Recepción</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="telefono">¿Esta seguro que desea eliminar la Recepción?</label>
+                        </div>
+                        <div class="form-group">
+
+                        </div>
+                        <input type="hidden" id="idRecepcionMod" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnEliminarRecepcion" class="btn btn-primary pull-right">Eliminar</button>
                 </div>
             </div>
         </div>

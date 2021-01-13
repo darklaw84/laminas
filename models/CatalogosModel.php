@@ -132,7 +132,7 @@ class CatalogosModel
         return $estaUsado;
     }
 
-    
+
 
 
 
@@ -171,15 +171,17 @@ class CatalogosModel
                 extract($row);
 
 
-               $respuesta= $this->obtenerInventarioComprometido($idProducto);
+                $respuesta = $this->obtenerInventarioComprometido($idProducto);
+                $cantidadTotal = $this->obtenerInventarioTotal($idProducto);
+                $cantidadTotalUsada = $this->obtenerInventarioUsado($idProducto);
 
-               $comprometido=0;
-               $unidadComp="";
-               if($respuesta->exito)
-               {
-                   $comprometido=$respuesta->registros['cantidad'];
-                   $unidadComp=$respuesta->registros['unidad'];
-               }
+
+                $comprometido = 0;
+                $unidadComp = "";
+                if ($respuesta->exito) {
+                    $comprometido = $respuesta->registros['cantidad'];
+                    $unidadComp = $respuesta->registros['unidad'];
+                }
 
                 $registro_item = array(
                     "idProducto" => $idProducto,
@@ -201,6 +203,9 @@ class CatalogosModel
                     "calibre" => $calibre,
                     "pesoTeorico" => $pesoTeorico,
                     "tipo" => $tipo,
+                    "inventarioTotal" => $cantidadTotal,
+                    "inventarioUsado" => $cantidadTotalUsada,
+
                     "invkilospiezas" => $invkilospiezas,
                     "precioGen" => $precioGen,
                     "precioRev" => $precioRev,
@@ -228,10 +233,11 @@ class CatalogosModel
 
 
         $query = "
-        select cd.cantidad,cd.idUnidad,uni.unidad from cotizaciondetalle cd 
+        select cd.cantidad,cd.idUnidad,uni.unidad,pr.pesoTeorico,cd.metros from cotizaciondetalle cd 
         inner join unidades uni on uni.idUnidad=cd.idUnidad
+        inner join productos pr on pr.idProducto = cd.idProducto
          where cd.idProducto in (
-        select idProducto from productos where idMateriaPrima= ".$idProducto.")
+        select idProducto from productos where idMateriaPrima= " . $idProducto . ")
          and idCotizacionDet not in (select idCotizacionDetalle from producciones)";
 
 
@@ -246,13 +252,32 @@ class CatalogosModel
 
         if ($num > 0) {
 
-            $cantidadComprometida=0;
+            $cantidadComprometida = 0;
 
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 extract($row);
-                $cantidadComprometida = $cantidadComprometida+$cantidad;
-                $unidadMostrar=$unidad;
-                $idUnidadMost=$idUnidad;
+                if ($idUnidad == 3) {
+                    //kilos
+                    $cantidadComprometida = $cantidadComprometida + $cantidad;
+                } else if ($idUnidad == 1) {
+                    //piezas
+
+                    $cantidadComprometida = $cantidadComprometida + $cantidad;
+                } else {
+                    //metros
+                    if ($pesoTeorico != null && $pesoTeorico > 0) {
+                        if ($metros != null && $metros > 0) {
+                            $cantidadComprometida = $cantidadComprometida + ($cantidad * $metros);
+                        } else {
+                            $cantidadComprometida = $cantidadComprometida + $cantidad;
+                        }
+                    } else {
+                        $cantidadComprometida = $cantidadComprometida + $cantidad;
+                    }
+                }
+
+                $unidadMostrar = $unidad;
+                $idUnidadMost = $idUnidad;
             }
             $registro_item = array(
                 "cantidad" => $cantidadComprometida,
@@ -263,13 +288,94 @@ class CatalogosModel
             $respuesta->exito = true;
             $respuesta->registros = $registro_item;
         } else {
-            
+
             $respuesta->mensaje = "No se encontraron datos ";
             $respuesta->exito = false;
         }
 
 
         return $respuesta;
+    }
+
+
+
+    function obtenerInventarioTotal($idProducto)
+    {
+
+
+        $query = "
+        select  r.cantidad,  r.peso,r.idUnidad,pr.pesoTeorico from recepciones r 
+        inner join productos pr on pr.idProducto = r.idProducto 
+        where r.idProducto = " . $idProducto . "";
+
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+        $cantidadTotal = 0;
+        if ($num > 0) {
+
+
+            $cantidadTotal = 0;
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                extract($row);
+
+                if ($idUnidad == 1) {
+                    //piezas
+
+                    $cantidadTotal = $cantidadTotal + ($cantidad);
+                } else if ($idUnidad == 2) {
+
+                    $cantidadTotal = $cantidadTotal + ($cantidad);
+                } else {
+                    //kilos
+                    $cantidadTotal = $cantidadTotal + $peso;
+                }
+            }
+        }
+
+
+        return $cantidadTotal;
+    }
+
+
+
+    function obtenerInventarioUsado($idProducto)
+    {
+
+
+        $query = "
+        select sum(kilos) cantidad  from producciones where idProductoRecepcion = " . $idProducto . "";
+
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+
+        $cantidadTotal = 0;
+        if ($num > 0) {
+
+
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                extract($row);
+
+                $cantidadTotal = $cantidad;
+            }
+        }
+
+
+        return $cantidadTotal;
     }
 
 
@@ -564,8 +670,8 @@ class CatalogosModel
 
 
         $query = "SELECT  r.usuarioRecibe,pr.producto,c.calibre,an.ancho,pr.largo,pr.sku,
-        t.tipo,r.idRecepcion,r.cantidad,r.peso,u.unidad,
-            a.almacen,r.fechaRecibe FROM  recepciones r
+        t.tipo,r.idRecepcion,r.cantidad,r.peso,r.cantidad,u.unidad,
+            a.almacen,r.fechaRecibe,pr.idUnidad FROM  recepciones r
             inner join productos pr on pr.idProducto = r.idProducto
             inner join anchos an on an.idAncho = pr.idAncho
         inner join calibres c on c.idCalibre = pr.idCalibre
@@ -602,15 +708,20 @@ class CatalogosModel
                     $kilosUsados = $kilosUsados + $det['kilos'];
                 }
 
-                $restante = $peso - $kilosUsados;
+                if ($peso == null) {
+                    $restante = $cantidad - $kilosUsados;
+                } else {
+                    $restante = $peso - $kilosUsados;
+                }
 
                 $registro_item = array(
                     "usuario" => $usuarioRecibe,
-                    "id" => "R" . $idRecepcion,
+                    "id" => $idRecepcion,
                     "idRecepcion" => $idRecepcion,
                     "cantidad" => $cantidad,
                     "peso" => $peso,
                     "unidad" => $unidad,
+                    "idUnidad" => $idUnidad,
                     "largo" => $largo,
                     "ancho" => $ancho,
                     "sku" => $sku,
@@ -645,7 +756,7 @@ class CatalogosModel
 
 
         $query = "SELECT  p.*,pr.producto,c.calibre,t.tipo from producciones p
-        inner join productos pr on pr.idProducto = p.idProducto
+        inner join productos pr on pr.idProducto = p.idProductoRecepcion
         inner join calibres c on c.idCalibre = pr.idCalibre
         inner join tipos t on t.idTipo =pr.idTipo  where idRecepcion = " . $idRecepcion . " ";
 
@@ -703,9 +814,10 @@ class CatalogosModel
     {
 
 
-        $query = "SELECT  pr.idUnidad,s.idSalida,s.usuario,s.fecha,p.kilos,p.cantidad,u.unidad,a.almacen,re.idRecepcion FROM  salidas s
+        $query = "SELECT  remd.idRemision,pr.idUnidad,s.idSalida,s.usuario,s.fecha,p.kilos,p.cantidad,u.unidad,a.almacen,re.idRecepcion FROM  salidas s
             inner join producciones p on p.idProduccion = s.idProduccion
             inner join recepciones re on re.idRecepcion = p.idRecepcion 
+            inner join remisiondetalle remd on remd.idProduccion = s.idProduccion
             inner join productos pr on pr.idProducto = re.idProducto
             inner join almacenes a on a.idAlmacen=p.idAlmacen
             inner join cotizaciondetalle cd on cd.idCotizacionDet=p.idCotizacionDetalle
@@ -739,7 +851,7 @@ class CatalogosModel
                 $registro_item = array(
                     "usuario" => $usuario,
                     "id" => "R" . $idRecepcion,
-                    "idMov" => "S" . $idSalida,
+                    "idMov" => "REM" . $idRemision,
                     "cantidad" => $cantidad,
                     "peso" => $kilos,
                     "unidad" => $unidad,
@@ -773,6 +885,72 @@ class CatalogosModel
         $query = "SELECT  c.*,u.uso from clientes c
         left join cfdiusos u on u.idUso=c.idUso
            order by rfc ";
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // extract row
+                // this will make $row['name'] to
+                // just $name only
+                extract($row);
+
+
+
+
+                $registro_item = array(
+                    "idCliente" => $idCliente,
+                    "cliente" => $cliente,
+                    "rfc" => $rfc,
+                    "representante" => $representante,
+                    "direccion" => $direccion,
+                    "telefono" => $telefono,
+                    "mail" => $mail,
+                    "idUso" => $idUso,
+                    "idVendedor" => $idVendedor,
+                    "uso" => $uso,
+                    "direccionentrega" => $direccionentrega,
+                    "tipoprecio" => $tipoprecio,
+                    "comentarios" => $comentarios,
+                    "activo" => $activo
+
+
+
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+    function obtenerClientesActivos()
+    {
+
+
+        $query = "SELECT  c.*,u.uso from clientes c
+        left join cfdiusos u on u.idUso=c.idUso
+        where c.activo = 1
+           order by cliente ";
 
 
         // prepare query statement
@@ -1476,6 +1654,63 @@ class CatalogosModel
 
 
 
+    function obtenerProveedoresActivos()
+    {
+
+
+        $query = "SELECT  * from proveedores 
+        where activo = 1
+           order by proveedor ";
+
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+        $num = $stmt->rowCount();
+        $respuesta = new RespuestaBD();
+
+        if ($num > 0) {
+
+            $arreglo = array();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // extract row
+                // this will make $row['name'] to
+                // just $name only
+                extract($row);
+
+
+
+
+                $registro_item = array(
+                    "idProveedor" => $idProveedor,
+                    "proveedor" => $proveedor,
+                    "rfc" => $rfc,
+                    "direccion" => $direccion,
+                    "telefono" => $telefono,
+                    "comentarios" => $comentarios,
+                    "activo" => $activo
+
+                );
+
+                array_push($arreglo, $registro_item);
+            }
+            $respuesta->mensaje = "";
+            $respuesta->exito = true;
+            $respuesta->registros = $arreglo;
+        } else {
+            $respuesta->mensaje = "No se encontraron datos ";
+            $respuesta->exito = false;
+        }
+
+
+        return $respuesta;
+    }
+
+
+
     function obtenerProducto($idProducto)
     {
 
@@ -1667,8 +1902,11 @@ class CatalogosModel
         $idUnidadFactura,
         $chkSalida,
         $chkEntrada,
-        $medidas,$idMateriaPrima
+        $medidas,
+        $idMateriaPrima
     ) {
+
+
 
         $respuesta = new RespuestaBD();
 
@@ -1719,6 +1957,7 @@ class CatalogosModel
             $stmt->bindParam(":pesoTeorico", $pesoTeorico);
             $stmt->bindParam(":chkSalida", $chkSalida);
             $stmt->bindParam(":chkEntrada", $chkEntrada);
+            $stmt->bindParam(":idMateriaPrima", $idMateriaPrima);
 
 
 
@@ -2112,7 +2351,8 @@ class CatalogosModel
         $idUnidadFactura,
         $entrada,
         $salida,
-        $medidasreves,$idMateriaPrima
+        $medidasreves,
+        $idMateriaPrima
     ) {
 
         $respuesta = new RespuestaBD();

@@ -91,7 +91,7 @@ class PDF extends FPDF
         $this->Cell(20, $alto + 1, utf8_decode('UM'), 1, 0, 'C', true);
         $this->Cell(160, $alto + 1, utf8_decode('DESCRIPCIÓN'), 1, 0, 'C', true); //165
 
-       // $this->Cell(40, $alto + 1, utf8_decode('PESO TEÓRICO'), 1, 0, 'C', true);
+        // $this->Cell(40, $alto + 1, utf8_decode('PESO TEÓRICO'), 1, 0, 'C', true);
         $this->Cell(30, $alto + 1, utf8_decode('PRECIO UNITARIO'), 1, 0, 'C', true);
 
         $this->Cell(30, $alto + 1, utf8_decode('TOTAL'), 1, 0, 'C', true);
@@ -135,7 +135,9 @@ $pdf->SetFont('Arial', '', 7);
 $contador = 1;
 $altodetalle = 5;
 $grantotal = 0;
+$cantidadTotal = 0;
 foreach ($productosOrden as $reg) {
+    $cantidadTotal = $cantidadTotal + $reg['cantidad'];
 
     if (is_numeric($reg['largo'])) {
         if ($reg['medidasreves'] == "1") {
@@ -209,9 +211,13 @@ $subtotal = $grantotal - $iva;
 
 
 
-$pdf->SetX(225);
+
 $pdf->SetFont('Arial', 'B', 7);
 $pdf->SetFillColor($gris);
+$pdf->SetX(10);
+$pdf->Cell(15, $altodetalle, "TOTAL", $bor, 0, 'C', true);
+$pdf->Cell(20, $altodetalle,  number_format($cantidadTotal, 2, '.', ','), $bor, 0, 'C', true);
+$pdf->SetX(225);
 $pdf->Cell(30,  $altodetalle, "SUBTOTAL", $bor, 0, 'C', true);
 $pdf->SetFont('Arial', '', 7);
 $pdf->Cell(3, $altodetalle, "$ ", 'LBT', 0, 'C', true);
@@ -259,7 +265,7 @@ $alto = 4;
 $alto2 = 3;
 
 
-$pdf->Image('./imagenes/datosfacturacion.jpg', 220, 160, 70, 30);
+$pdf->Image('./imagenes/datosfacturacion.jpg', 225, 160, 60, 30);
 
 
 

@@ -163,13 +163,19 @@ if ($idCotizacion != "") {
 
                                     if (!$produ['tieneRemision']) {
 
+                                        if (is_numeric($prod['largo'])) {
+                                            $largo = $prod['largo'];
+                                        } else {
+                                            $largo = "";
+                                        }
+
                             ?>
                                         <tr id="<?php echo $produ['idProduccion'] ?>">
 
                                             <a>
                                                 <td><input type="checkbox" id="agregar"></td>
                                                 <td>PR<?php echo $produ['idProduccion'] ?></td>
-                                                <td><?php echo $prod['producto'] . " " . $prod['tipo'] ?></td>
+                                                <td><?php echo $prod['producto']  . " " . $largo . " " . $prod['ancho'] . " " .$prod['tipo'] ?></td>
                                                 <td><?php echo $prod['calibre'] ?></td>
                                                 <td><?php echo $prod['unidad'] ?></td>
                                                 <td><?php echo number_format($produ['cantidad'], 2, '.', ',') ?></td>

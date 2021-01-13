@@ -21,10 +21,10 @@ if ($entro != "") {
 
     $cliente = $_POST['cliente'];
     $rfc = $_POST['rfc'];
-    $comentarios = $_POST['comentarios'];
+    $comentarios = "";
     $direccion = $_POST['direccion'];
     $representante = $_POST['representante'];
-    $direccionentrega = $_POST['direccionentrega'];
+    $direccionentrega = "";
     $mail = $_POST['mail'];
     $idUso = $_POST['idUso'];
     $idVendedor = $_POST['idVendedor'];
@@ -36,7 +36,7 @@ if ($entro != "") {
 
     if (
         $cliente == "" || $rfc == "" || $direccion == "" || $representante == ""
-        || $mail == "" || $telefono == "" || $direccionentrega == ""
+        || $mail == "" || $telefono == "" 
     ) {
         $mensajeEnviar = "Todos los campos son obligatorios, por favor verifique";
     } else {
@@ -184,14 +184,7 @@ $usos = $respuesta->registros;
                                 </div>
                             </div>
                             <div class="form-row mt-2">
-                                <div class="col-md-6">
-                                    <label for="clave">Dirección de Entrega</label>
-                                    <div>
-                                        <input type="text" maxlength="300" class="form-control" id="direccionentrega" name="direccionentrega" value="<?php if (isset($direccionentrega)) {
-                                                                                                                                                            echo strtoupper($direccionentrega);
-                                                                                                                                                        } ?>" placeholder="Dirección de Entrega" />
-                                    </div>
-                                </div>
+                                
 
                                 <div class="col-md-6">
                                     <label for="clave">Tipo Precio</label>
@@ -205,14 +198,7 @@ $usos = $respuesta->registros;
 
                             </div>
                             <div class="form-row mt-2">
-                                <div class="col-md-6">
-                                    <label for="clave">Comentarios</label>
-                                    <div>
-                                        <input type="text" maxlength="200" class="form-control" id="comentarios" name="comentarios" value="<?php if (isset($comentarios)) {
-                                                                                                                                                            echo strtoupper($comentarios);
-                                                                                                                                                        } ?>" placeholder="Comentarios" />
-                                    </div>
-                                </div>
+                                
                                 <div class="col-md-6">
                                     <label for="clave">Tipo CFDI</label>
                                     <div>

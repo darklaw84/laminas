@@ -68,9 +68,11 @@ $(document).ready(function () {
 
         var idFormaPago = $('#idFormaPagoAbono').val();
 
+        var fechaAbono = $('#fechaAbono').val();
 
 
-        if (montoAbono != "") {
+
+        if (montoAbono != "" && fechaAbono != "") {
 
             $.ajax({
                 url: 'realizarAbono.php',
@@ -78,6 +80,7 @@ $(document).ready(function () {
                 data: {
                     id: id,
                     idFormaPago: idFormaPago,
+                    fechaAbono:fechaAbono,
                     montoAbono: montoAbono
                 },
                 dataType: 'json',
@@ -98,7 +101,7 @@ $(document).ready(function () {
             });
         }
         else {
-            $('#modalMensajeError').find('.modal-body').text('El monto debe de ser un valor númerico válido').end().modal('show');
+            $('#modalMensajeError').find('.modal-body').text('El monto debe de ser un valor númerico válido y la fecha debe de ser válida').end().modal('show');
         }
 
 
@@ -116,6 +119,53 @@ $(document).ready(function () {
 
 
         $('#modalEliminaCotizacion').modal('toggle');
+    });
+
+
+
+    $(document).on('click', 'a[data-role=eliminaRecepcion]', function () {
+        var id = $(this).data('id');
+
+
+        $('#idRecepcionMod').val(id);
+
+
+        $('#modalEliminaRecepcion').modal('toggle');
+    });
+
+
+
+
+    $('#btnEliminarRecepcion').click(function () {
+
+        var id = $('#idRecepcionMod').val();
+
+
+        $.ajax({
+            url: 'eliminarRecepcion.php',
+            type: 'post',
+            data: {
+                id: id
+            },
+            dataType: 'json',
+            success: function (response) {
+
+                if (response.exito) {
+
+                    $('#' + id).remove();
+
+                    window.location='index.php?p=materiales'
+                }
+                else {
+                    $('#modalMensajeError').find('.modal-body').text(response.mensaje).end().modal('show');
+
+                }
+
+            }
+        });
+
+
+
     });
 
 
@@ -342,29 +392,35 @@ $(document).ready(function () {
         var condiciones = $('#condicionesM').val();
         var vigencia = $('#vigenciaM').val();
         var forma = $('#formaM').val();
-        var lugar = '';
+        var lugar = $('#lugarM').val();
         var fechaentrega = $('#fechaentregaM').val();
         var idCotizacion = $('#idCotizacionM').val();
 
-        $.ajax({
-            url: 'guardarextras.php',
-            type: 'post',
-            data: {
-                idCotizacion: idCotizacion,
-                observaciones: observaciones,
-                vigencia: vigencia,
-                condiciones: condiciones,
-                fechaentrega: fechaentrega,
-                lugar: lugar,
-                forma: forma
+        if (forma == null || forma=='') {
+            $('#modalMensajeError').find('.modal-body').text('Seleccione una forma de pago válida').end().modal('show');
+        }
+        else {
 
-            },
-            dataType: 'json',
-            complete: function () {
-                $('#modalMensajeError').find('.modal-body').text('Extras actualizados con éxito').end().modal('show');
-                $('#modalExtrasUpdate').modal('hide');
-            }
-        });
+            $.ajax({
+                url: 'guardarextras.php',
+                type: 'post',
+                data: {
+                    idCotizacion: idCotizacion,
+                    observaciones: observaciones,
+                    vigencia: vigencia,
+                    condiciones: condiciones,
+                    fechaentrega: fechaentrega,
+                    lugar: lugar,
+                    forma: forma
+
+                },
+                dataType: 'json',
+                complete: function () {
+                    $('#modalMensajeError').find('.modal-body').text('Extras actualizados con éxito').end().modal('show');
+                    $('#modalExtrasUpdate').modal('hide');
+                }
+            });
+        }
 
     });
 

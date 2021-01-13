@@ -120,3 +120,16 @@ foreach ($registros as $reg) {
 
 $xlsx = SimpleXLSXGen::fromArray($books);
 $xlsx->saveAs('books.xlsx');
+
+$file = "books.xlsx"; 
+
+header("Content-Description: Pedidos-Abonos"); 
+header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"); 
+header("Content-Disposition: attachment; filename=\"". "Pedidos-Abonos.xlsx" ."\""); 
+
+readfile ($file);
+exit(); 
+
+
+
+

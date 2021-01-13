@@ -46,7 +46,7 @@ if ($_SESSION['verCotizaciones']) {
 
 
 
-$respClientes = $contcat->obtenerclientes();
+$respClientes = $contcat->obtenerClientesActivos();
 $clientes = $respClientes->registros;
 
 
@@ -186,13 +186,16 @@ $clientes = $respClientes->registros;
                 <table style="width: 100%;" id="example" class="table table-hover table-striped table-bordered ">
                     <thead>
                         <tr>
-
-                            <th>Producto</th>
-                            <th>Unidad</th>
                             <th>Cantidad</th>
-                            <th>Precio UM</th>
+
+
+                            <th>UM</th>
+                            <th>Producto</th>
                             <th>Metros</th>
                             <th>Precio Unitario</th>
+
+
+
                             <th>Monto</th>
                             <th>Metros Lineales</th>
                             <th>Peso Teórico</th>
@@ -221,11 +224,11 @@ $clientes = $respClientes->registros;
                                 }
 
                                 $totalPartida = $reg['preciounitario'] * $reg['cantidad']; ?>
-
-                                <td><?php echo strtoupper($reg['sku'] . " " . $reg['producto'] . " " . $largo . " " . $reg['ancho'] . " " . $reg['calibre'] . " " . $reg['tipo']);  ?></td>
-                                <td><?php echo $reg['unidad'] ?></td>
                                 <td><?php echo $reg['cantidad'] ?></td>
-                                <td><?php echo "$ " . number_format($reg['precioUM'], 2, '.', ',') ?></td>
+                                <td><?php echo $reg['unidad'] ?></td>
+                                <td><?php echo strtoupper($reg['sku'] . " " . $reg['producto'] . " " . $largo . " " . $reg['ancho'] . " " . $reg['calibre'] . " " . $reg['tipo']);  ?></td>
+
+
                                 <td><?php echo $reg['metros'] ?></td>
                                 <td><?php echo "$ " . number_format($reg['preciounitario'], 2, '.', ',') ?></td>
                                 <td><?php echo "$ " . number_format($totalPartida, 2, '.', ',') ?></td>

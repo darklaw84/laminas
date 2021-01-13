@@ -158,7 +158,8 @@ $devoluciones = $respuesta->registros;
                                             } ?></td>
                                         <td><?php if ($ins['tipo'] == "S") { ?>
                                                 <img src="./imagenes/out.png" style="height: 30px"> <?php } else { ?>
-                                                <img src="./imagenes/in.png" style="height: 30px"><?php } ?></td>
+                                                <img src="./imagenes/in.png" style="height: 30px"><?php } ?>
+                                        </td>
                                         <td><?php echo $ins['almacen'] ?></td>
                                         <td><?php echo $ins['usuario'] ?></td>
 
@@ -185,6 +186,16 @@ $devoluciones = $respuesta->registros;
             <!-- hasta aqui llega-->
         </div>
 
+        <div class="row mt-2 mb-2">
+            <div class="col-md-8">
+            </div>
+            <div class="col-md-2">
+                <a href="generarExcelInventarioMP.php" target="_blank" class="btn btn-success"> Exportar Inventario MP XLSX
+                </a>
+            </div>
+
+        </div>
+
         <div class="main-card mb-3 card">
             <div class="card-body">
                 <h2>Inventario MP</h2>
@@ -192,16 +203,16 @@ $devoluciones = $respuesta->registros;
                     <thead>
                         <tr>
 
-                            <th>#</th>
+                            <th># REC</th>
                             <th>Producto</th>
-                            <th>UM</th>
+                            <th>Unidad</th>
                             <th>Cant Total</th>
 
 
 
 
                             <th>Usados</th>
-                            
+
                             <th>Disponibles</th>
                             <th>Almacen</th>
                             <?php if ($_SESSION['traspasos'] == "1") { ?>
@@ -215,29 +226,40 @@ $devoluciones = $respuesta->registros;
 
                         <?php if (isset($recepciones) && count($recepciones) > 0) {
                             foreach ($recepciones as $det) {
-                                if (is_numeric($det['largo'])) {
-                                    $largo = $det['largo'];
-                                    $mostrarbotonMetros = false;
-                                } else {
-                                    $largo = "";
-                                } ?>
-                                <tr>
 
-                                    <a>
-                                        <td><?php echo $det['id'] ?></td>
-                                        <td><?php echo $det['sku'] . " " . $det['producto'] . " " . $largo . " " . $det['ancho'] . " " . $det['calibre'] . " " . $det['tipo'] ?></td>
-                                        <td><?php echo $det['unidad'] ?></td>
-                                        <td><?php echo  number_format($det['peso'], 2, '.', ','); ?></td>
-                                        <td><?php echo  number_format($det['kilosUsados'], 2, '.', ','); ?></td>
-                                        <td><?php echo  number_format($det['restante'], 2, '.', ','); ?></td>
-                                        <td><?php echo $det['almacen'] ?></td>
-                                        <?php if ($_SESSION['traspasos'] == "1") { ?>
+                                if ($det['restante']>0) {
+                                    if (is_numeric($det['largo'])) {
+                                        $largo = $det['largo'];
+                                        $mostrarbotonMetros = false;
+                                    } else {
+                                        $largo = "";
+                                    }
+
+                                    if ($det['peso'] == null) {
+                                        $total = $det['cantidad'];
+                                    } else {
+                                        $total = $det['peso'];
+                                    }
+
+                        ?>
+                                    <tr>
+
+                                        <a>
+                                            <td><?php echo $det['id'] ?></td>
+                                            <td><?php echo $det['sku'] . " " . $det['producto'] . " " . $largo . " " . $det['ancho'] . " " . $det['calibre'] . " " . $det['tipo'] ?></td>
+                                            <td><?php echo $det['unidad'] ?></td>
+                                            <td><?php echo  number_format($total, 2, '.', ','); ?></td>
+                                            <td><?php echo  number_format($det['kilosUsados'], 2, '.', ','); ?></td>
+                                            <td><?php echo  number_format($det['restante'], 2, '.', ','); ?></td>
+                                            <td><?php echo $det['almacen'] ?></td>
+                                            <?php if ($_SESSION['traspasos'] == "1") { ?>
 
 
-                                            <td><a href="#" class="btn btn-primary" data-role="hacerTraspaso" data-id="<?php echo $det['idRecepcion'] ?>">Traspaso</a></td>
-                                        <?php } ?>
-                                </tr>
+                                                <td><a href="#" class="btn btn-primary" data-role="hacerTraspaso" data-id="<?php echo $det['idRecepcion'] ?>">Traspaso</a></td>
+                                            <?php } ?>
+                                    </tr>
                         <?php }
+                            }
                         } ?>
 
 
@@ -263,15 +285,20 @@ $devoluciones = $respuesta->registros;
 
         <div class="main-card mb-3 card">
             <div class="card-body">
-                <h2>Inventario Comprometido</h2>
+                <h2>Inventario Total</h2>
                 <table style="width: 100%;" id="comprometido" class="table table-hover table-striped table-bordered ">
                     <thead>
                         <tr>
 
-                            
+
                             <th>Producto</th>
-                            <th>UM</th>
-                            <th>Cant Total</th>
+
+                            <th>Total</th>
+                            <th>Usado</th>
+                            <th>Saldo</th>
+                            <th>Comprometido</th>
+                            <th>Disponible</th>
+
 
 
 
@@ -290,10 +317,15 @@ $devoluciones = $respuesta->registros;
                                     <tr>
 
                                         <a>
-                                            
+
                                             <td><?php echo $det['sku'] . " " . $det['producto'] . " " . $largo . " " . $det['ancho'] . " " . $det['calibre'] . " " . $det['tipo'] ?></td>
-                                            <td><?php echo $det['unidadComp'] ?></td>
+
+                                            <td><?php echo  number_format($det['inventarioTotal'], 2, '.', ','); ?></td>
+                                            <td><?php echo  number_format($det['inventarioUsado'], 2, '.', ','); ?></td>
+                                            <td><?php echo  number_format($det['inventarioTotal'] - $det['inventarioUsado'], 2, '.', ','); ?></td>
                                             <td><?php echo  number_format($det['comprometido'], 2, '.', ','); ?></td>
+                                            <td><?php echo  number_format($det['inventarioTotal'] - $det['inventarioUsado'] - $det['comprometido'], 2, '.', ','); ?></td>
+
 
                                     </tr>
                         <?php }
@@ -313,7 +345,7 @@ $devoluciones = $respuesta->registros;
         <div class="main-card mb-3 card">
             <div class="card-body">
                 <h2>Devoluciones Vigentes</h2>
-                <table style="width: 100%;" id="recepcionesT" class="table table-hover table-striped table-bordered ">
+                <table style="width: 100%;" id="recepcionesT2" class="table table-hover table-striped table-bordered ">
                     <thead>
                         <tr>
 
@@ -382,8 +414,6 @@ $devoluciones = $respuesta->registros;
 </div>
 
 <script>
-   
-
     $(document).ready(function() {
         $('#comprometido').DataTable({
             scrollY: '35vh',

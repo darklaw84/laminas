@@ -30,13 +30,29 @@ if ($entro == "1") {
         if ($cantidad <= 0) {
             $mensajeEnviar = "La cantidad a devolver no puede ser menor o igual a 0";
         } else {
-            $devcontroller->insertarDevolucion($_SESSION['idUsr'], $idProdDev, $cantidad, $cantidad * $producto['pesoTeorico'],$idAlmacen);
+            $devcontroller->insertarDevolucion($_SESSION['idUsr'], $idProdDev, $cantidad, $cantidad * $producto['pesoTeorico'], $idAlmacen);
         }
     } else {
         $mensajeEnviar = "La cantidad a devolver no puede ser 0";
     }
 }
 
+
+if (isset($_GET['idDevolucion'])) {
+    $idDevolucion = $_GET['idDevolucion'];
+}
+else
+{
+    $idDevolucion="";
+}
+
+if ($idDevolucion != "") {
+    $respu = $devcontroller->eliminarDevolucion($idDevolucion);
+
+    if (!$respu->exito) {
+        $mensajeEnviar = $respu->mensaje;
+    }
+}
 
 
 
@@ -116,7 +132,7 @@ $almacenes = $respuesta->registros;
                             <label for="idProd">Almacen Destino</label>
                             <div>
                                 <select id="idAlmacen" name="idAlmacen" class="multiselect-dropdown form-control">
-                                   
+
                                     <?php
                                     if (isset($almacenes)) {
                                         foreach ($almacenes as $ins) {
@@ -145,7 +161,7 @@ $almacenes = $respuesta->registros;
                         <div class="col-md-2">
                             <label for="cantidad">&nbsp;</label>
                             <div>
-                            <button type="submit" id="btnHacerDevolucion" class="btn btn-warning mt-2 mb-2 ">Hacer Devolución</button>
+                                <button type="submit" id="btnHacerDevolucion" class="btn btn-warning mt-2 mb-2 ">Hacer Devolución</button>
                             </div>
                         </div>
 
@@ -175,6 +191,7 @@ $almacenes = $respuesta->registros;
                                 <th>Usuario</th>
                                 <th>Fecha</th>
                                 <th>Almacen</th>
+                                <th>X</th>
 
 
                             </tr>
@@ -193,7 +210,7 @@ $almacenes = $respuesta->registros;
 
                                     <a>
 
-                                        <td>D<?php echo $reg['idDevolucion'] ?></td>
+                                        <td><?php echo $reg['idDevolucion'] ?></td>
 
                                         <td><?php echo $reg['unidad'] ?></td>
                                         <td><?php echo $reg['cantidad'] ?></td>
@@ -203,7 +220,7 @@ $almacenes = $respuesta->registros;
                                         <td><?php echo strtoupper($reg['fecha']); ?></td>
                                         <td><?php echo strtoupper($reg['almacen']); ?></td>
 
-
+                                        <td><a class="btn btn-primary" href="index.php?p=devoluciones&entro=4&idDevolucion=<?php echo $reg['idDevolucion']; ?>">X</a></td>
                                 </tr>
                             <?php }
 

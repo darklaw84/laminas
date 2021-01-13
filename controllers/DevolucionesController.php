@@ -26,6 +26,16 @@ class DevolucionesController
     return $respuesta;
     }
 
+    function eliminarDevolucion($idDevolucion)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase= new DevolucionesModel($db);
+        $respuesta = $clase-> eliminarDevolucion($idDevolucion);
+        
+    return $respuesta;
+    }
+
 
     function obtenerDevoluciones()
     {

@@ -297,6 +297,18 @@ class CotizacionController
 
 
 
+    function  eliminarRecepcion($idCotizacion)
+    {
+        $database = new Database();
+        $db = $database->getConnection();
+        $clase = new CotizacionesModel($db);
+        $respuesta = $clase->eliminarRecepcion($idCotizacion);
+
+        return $respuesta;
+    }
+
+
+
     function  actualizarCostoEnvio($idCotizacion, $costo)
     {
         $database = new Database();
@@ -308,12 +320,12 @@ class CotizacionController
     }
 
 
-    function  realizarAbono($idCotizacion, $montoAbono,$idUsuario,$idFormaPago)
+    function  realizarAbono($idCotizacion, $montoAbono,$idUsuario,$idFormaPago,$fechaAbono)
     {
         $database = new Database();
         $db = $database->getConnection();
         $clase = new CotizacionesModel($db);
-        $respuesta = $clase->realizarAbono($idCotizacion, $montoAbono,$idUsuario,$idFormaPago);
+        $respuesta = $clase->realizarAbono($idCotizacion, $montoAbono,$idUsuario,$idFormaPago,$fechaAbono);
 
         return $respuesta;
     }

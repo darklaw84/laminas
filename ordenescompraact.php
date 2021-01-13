@@ -364,8 +364,11 @@ foreach ($productosOrden as $prod) {
                     </thead>
                     <tbody>
                         <?php $cont = 1;
+                        $cantidadTotal = 0;
+                        $pesoTotal=0;
                         foreach ($productosOrden as $reg) {
-
+                            $cantidadTotal = $cantidadTotal + $reg['cantidad'];
+                            
                             if (is_numeric($reg['largo'])) {
                                 $largo = $reg['largo'];
                             } else {
@@ -384,14 +387,18 @@ foreach ($productosOrden as $prod) {
                                 <td><?php if ($reg['pesoTeorico'] > 0) {
                                         if ($reg['idUnidad'] == 3) {
                                             echo number_format($reg['cantidad'], 2, '.', ',');
+                                            $pesoTotal = $pesoTotal + $reg['cantidad'];
                                         } else {
                                             echo number_format($reg['cantidad'] * $reg['pesoTeorico'], 2, '.', ',');
+                                            $pesoTotal = $pesoTotal + $reg['cantidad'] * $reg['pesoTeorico'];
                                         }
                                     } else if ($reg['prodPesoTeorico'] > 0) {
                                         if ($reg['idUnidad'] == 3) {
                                             echo number_format($reg['cantidad'], 2, '.', ',');
+                                            $pesoTotal = $pesoTotal + $reg['cantidad'];
                                         } else {
                                             echo number_format($reg['cantidad'] * $reg['prodPesoTeorico'], 2, '.', ',');
+                                            $pesoTotal = $pesoTotal + $reg['cantidad'] * $reg['prodPesoTeorico'];
                                         }
                                     } ?></td>
                                 <td><button type="button" data-toggle="popover-custom-content" rel="popover-focus" popover-id="P<?php echo $reg['idOrdenCompraDet'] ?>" class="mr-2 mb-2 btn btn-warning"><?php echo number_format($reg['precioUnidadPeso'], 2, '.', ',') ?></button></td>
@@ -409,6 +416,19 @@ foreach ($productosOrden as $prod) {
                         } ?>
 
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th style="text-align:right">Tot:</th>
+                            <th><?php echo number_format($cantidadTotal, 2, '.', ','); ?> </th>
+
+                            <th ></th>
+                            <th style="text-align:right">Tot:</th>
+                            <th><?php echo number_format($pesoTotal, 2, '.', ','); ?> </th>
+                            <th colspan="3"></th>
+
+
+                        </tr>
+                    </tfoot>
 
                 </table>
 

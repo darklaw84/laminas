@@ -353,7 +353,7 @@ $registros = $respuesta->registros;
                     <tbody>
                         <?php foreach ($registros as $reg) { ?>
                             <tr id="<?php echo $reg['idUsuario'] ?>">
-                                <td data-target="nombre"><?php echo strtoupper($reg['nombre']) ?>
+                                <td data-target="nombre"><?php echo strtoupper($reg['nombre']) ?></td>
                                 <td data-target="apellidos"><?php echo strtoupper($reg['apellidos']) ?></td>
                                 <td data-target="correo"><?php echo strtoupper($reg['correo']) ?></td>
                                 <td data-target="telefono"><?php echo strtoupper($reg['telefono']) ?></td>
@@ -396,7 +396,8 @@ $registros = $respuesta->registros;
                                     <input class="traspasos" type="hidden" value="<?php echo $reg['traspasos'] ?>">
                                     <input class="verCotizaciones" type="hidden" value="<?php echo $reg['verCotizaciones'] ?>">
                                     <input class="inventarios" type="hidden" value="<?php echo $reg['inventarios'] ?>">
-                                    <input class="genRem" type="hidden" value="<?php echo $reg['genRem'] ?>"></td>
+                                    <input class="genRem" type="hidden" value="<?php echo $reg['genRem'] ?>">
+                                </td>
                                 </td>
 
                             </tr>
